@@ -1,0 +1,28 @@
+package com.example.medimart.data.repository
+
+import com.example.medimart.data.model.Address
+import com.example.medimart.data.model.User
+import com.example.medimart.data.remote.ApiService
+
+class UserRepository(private val apiService: ApiService) {
+    suspend fun getProfile(): Result<User> = try {
+        Result.success(apiService.getProfile())
+    } catch (e: Exception) { Result.failure(e) }
+
+    suspend fun updateProfile(user: User): Result<User> = try {
+        Result.success(apiService.updateProfile(user))
+    } catch (e: Exception) { Result.failure(e) }
+
+    suspend fun getAddresses(): Result<List<Address>> = try {
+        Result.success(apiService.getAddresses())
+    } catch (e: Exception) { Result.failure(e) }
+
+    suspend fun addAddress(address: Address): Result<Address> = try {
+        Result.success(apiService.addAddress(address))
+    } catch (e: Exception) { Result.failure(e) }
+
+    suspend fun deleteAddress(id: String): Result<Boolean> = try {
+        val res = apiService.deleteAddress(id)
+        Result.success(res["success"] ?: false)
+    } catch (e: Exception) { Result.failure(e) }
+}
