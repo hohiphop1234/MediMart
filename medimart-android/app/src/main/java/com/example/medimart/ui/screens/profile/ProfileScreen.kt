@@ -1,0 +1,87 @@
+package com.example.medimart.ui.screens.profile
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.filled.LocalShipping
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Receipt
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import com.example.medimart.theme.MediMartBg
+import com.example.medimart.theme.MediMartOrange
+
+@Composable
+fun ProfileScreen(viewModel: ProfileViewModel, onLogout: () -> Unit) {
+    val user by viewModel.user.collectAsState()
+
+    Column(modifier = Modifier.fillMaxSize().background(MediMartBg)) {
+        Box(
+            modifier = Modifier.fillMaxWidth().background(MediMartOrange).padding(top = 48.dp, bottom = 32.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Box(
+                    modifier = Modifier.size(80.dp).background(Color.White, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(Icons.Default.Person, contentDescription = null, tint = MediMartOrange, modifier = Modifier.size(40.dp))
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(user?.name ?: "Khách hàng", color = Color.White, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+                Text(user?.phone ?: "Đang tải...", color = Color.White.copy(alpha = 0.8f))
+                Spacer(modifier = Modifier.height(8.dp))
+                Box(modifier = Modifier.background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(16.dp)).padding(horizontal = 16.dp, vertical = 4.dp)) {
+                    Text("${user?.loyaltyPoints ?: 0} Điểm", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+        
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Card(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            shape = RoundedCornerShape(16.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text("Đơn hàng của tôi", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(Icons.Default.Receipt, contentDescription = null, tint = MediMartOrange)
+                        Text("Chờ xác nhận", style = MaterialTheme.typography.bodySmall)
+                    }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(Icons.Default.LocalShipping, contentDescription = null, tint = MediMartOrange)
+                        Text("Đang giao", style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Button(
+            onClick = onLogout,
+            colors = ButtonDefaults.buttonColors(containerColor = Color.White, contentColor = Color.Red),
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).height(50.dp),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+        ) {
+            Icon(Icons.Default.ExitToApp, contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Đăng xuất", fontWeight = FontWeight.Bold)
+        }
+    }
+}
