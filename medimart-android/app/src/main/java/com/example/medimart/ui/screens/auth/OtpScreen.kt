@@ -16,6 +16,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.medimart.theme.MediMartOrange
+import com.example.medimart.theme.MediMartDisabledContent
+import com.example.medimart.theme.MediMartDisabledSurface
 import com.example.medimart.theme.MediMartTextPrimary
 import com.example.medimart.theme.MediMartTextSecondary
 
@@ -30,6 +32,7 @@ fun OtpScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     val otpSuccess by viewModel.otpSuccess.collectAsState()
+    val canVerify = !isLoading && otp.length == 4
 
     LaunchedEffect(otpSuccess) {
         if (otpSuccess) onLoginSuccess()
@@ -57,13 +60,16 @@ fun OtpScreen(
         
         OutlinedTextField(
             value = otp,
-            onValueChange = { if (it.length <= 4) otp = it },
+            onValueChange = { value -> otp = value.filter(Char::isDigit).take(4) },
+            label = { Text("Mã OTP") },
+            placeholder = { Text("• • • •") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth(0.5f),
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(0.72f),
             textStyle = LocalTextStyle.current.copy(
                 textAlign = TextAlign.Center, 
-                fontSize = 28.sp,
-                letterSpacing = 8.sp,
+                fontSize = 24.sp,
+                letterSpacing = 5.sp,
                 fontWeight = FontWeight.Bold,
                 color = MediMartOrange
             ),
@@ -86,13 +92,21 @@ fun OtpScreen(
                 .fillMaxWidth()
                 .height(56.dp),
             shape = CircleShape,
-            colors = ButtonDefaults.buttonColors(containerColor = MediMartOrange),
-            enabled = !isLoading && otp.length == 4
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MediMartOrange,
+                disabledContainerColor = MediMartDisabledSurface,
+                disabledContentColor = MediMartDisabledContent
+            ),
+            enabled = canVerify
         ) {
             if (isLoading) {
-                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                CircularProgressIndicator(color = MediMartDisabledContent, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
             } else {
-                Text("Xác thực", style = MaterialTheme.typography.titleMedium, color = Color.White)
+                Text(
+                    "Xác thực",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = if (canVerify) Color.White else MediMartDisabledContent
+                )
             }
         }
     }

@@ -3,6 +3,7 @@ package com.example.medimart.ui.navigation
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -52,6 +53,13 @@ fun AppNavigation(
     val categoryViewModel = remember { CategoryViewModel(productRepository) }
     val profileViewModel = remember { ProfileViewModel(userRepository) }
     val checkoutViewModel = remember { CheckoutViewModel(cartRepository, orderRepository, userRepository) }
+
+    LaunchedEffect(currentRoute) {
+        when (currentRoute) {
+            "profile" -> profileViewModel.loadProfile()
+            "checkout" -> checkoutViewModel.loadAddresses()
+        }
+    }
 
     val cartItems by cartViewModel.cartItems.collectAsState()
     val cartBadgeCount = cartItems.sumOf { it.quantity }

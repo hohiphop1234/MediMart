@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -11,10 +12,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.medimart.theme.MediMartOrange
 import com.example.medimart.theme.MediMartOrangeSoft
+import com.example.medimart.theme.MediMartDisabledContent
+import com.example.medimart.theme.MediMartDisabledSurface
 import com.example.medimart.theme.MediMartTextPrimary
 import com.example.medimart.theme.MediMartTextSecondary
 
@@ -28,6 +32,7 @@ fun LoginScreen(
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     val loginSuccess by viewModel.loginSuccess.collectAsState()
+    val canContinue = !isLoading && phone.length >= 10
 
     LaunchedEffect(loginSuccess) {
         if (loginSuccess) {
@@ -68,9 +73,16 @@ fun LoginScreen(
         
         OutlinedTextField(
             value = phone,
-            onValueChange = { phone = it },
+            onValueChange = { value -> phone = value.filter(Char::isDigit).take(11) },
             label = { Text("Số điện thoại") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Phone,
+                imeAction = ImeAction.Done
+            ),
+            keyboardActions = KeyboardActions(
+                onDone = { if (canContinue) viewModel.login(phone) }
+            ),
+            singleLine = true,
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(16.dp),
             colors = OutlinedTextFieldDefaults.colors(
@@ -94,14 +106,19 @@ fun LoginScreen(
             shape = CircleShape, // Pill shaped button
             colors = ButtonDefaults.buttonColors(
                 containerColor = MediMartOrange,
-                disabledContainerColor = MediMartOrange.copy(alpha = 0.5f)
+                disabledContainerColor = MediMartDisabledSurface,
+                disabledContentColor = MediMartDisabledContent
             ),
-            enabled = !isLoading && phone.isNotBlank()
+            enabled = canContinue
         ) {
             if (isLoading) {
-                CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                CircularProgressIndicator(color = MediMartDisabledContent, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
             } else {
-                Text("Tiếp tục", style = MaterialTheme.typography.titleMedium, color = Color.White)
+                Text(
+                    "Tiếp tục",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = if (canContinue) Color.White else MediMartDisabledContent
+                )
             }
         }
     }

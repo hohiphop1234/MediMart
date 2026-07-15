@@ -19,10 +19,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.example.medimart.theme.MediMartBg
 import com.example.medimart.theme.MediMartOrange
 import com.example.medimart.ui.components.EmptyState
+import com.example.medimart.ui.components.RemoteImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -53,11 +53,12 @@ fun CartScreen(viewModel: CartViewModel, onNavigateToHome: () -> Unit, onNavigat
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
                         Row(modifier = Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                            AsyncImage(
-                                model = item.imageUrl,
+                            RemoteImage(
+                                imageUrl = item.imageUrl,
                                 contentDescription = null,
                                 contentScale = ContentScale.Crop,
-                                modifier = Modifier.size(60.dp).clip(RoundedCornerShape(8.dp))
+                                modifier = Modifier.size(60.dp).clip(RoundedCornerShape(8.dp)),
+                                fallbackColor = Color(0xFFFFD9A0)
                             )
                             Spacer(modifier = Modifier.width(12.dp))
                             Column(modifier = Modifier.weight(1f)) {
@@ -80,7 +81,7 @@ fun CartScreen(viewModel: CartViewModel, onNavigateToHome: () -> Unit, onNavigat
             }
             Surface(shadowElevation = 16.dp, color = Color.White) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp).padding(bottom = 80.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {

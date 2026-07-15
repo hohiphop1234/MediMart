@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
@@ -12,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.example.medimart.theme.MediMartTextPrimary
 import com.example.medimart.theme.MediMartTextSecondary
@@ -56,8 +58,12 @@ fun SearchBar(
                 }
                 BasicTextField(
                     value = query,
-                    onValueChange = onQueryChange,
+                    onValueChange = { value ->
+                        onQueryChange(value.filterNot { it == '\n' || it == '\r' })
+                    },
                     textStyle = MaterialTheme.typography.bodyMedium.copy(color = MediMartTextPrimary),
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )
             }

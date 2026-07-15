@@ -35,9 +35,15 @@ class CheckoutViewModel(
     private val _error = MutableStateFlow<String?>(null)
     val error = _error.asStateFlow()
 
-    init {
+    fun loadAddresses() {
         viewModelScope.launch {
-            userRepository.getAddresses().onSuccess { _addresses.value = it }
+            _isLoading.value = true
+            _error.value = null
+            userRepository.getAddresses().fold(
+                onSuccess = { _addresses.value = it },
+                onFailure = { _error.value = it.message ?: "Không tải được địa chỉ" }
+            )
+            _isLoading.value = false
         }
     }
 

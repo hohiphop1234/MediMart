@@ -14,7 +14,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.example.medimart.data.model.Banner
 import com.example.medimart.theme.MediMartOrange
 import kotlinx.coroutines.delay
@@ -40,14 +39,16 @@ fun BannerSlider(banners: List<Banner>) {
                 .fillMaxWidth()
                 .height(180.dp)
         ) { page ->
-            AsyncImage(
-                model = banners[page].imageUrl,
+            RemoteImage(
+                imageUrl = banners[page].imageUrl,
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(horizontal = 16.dp)
-                    .clip(RoundedCornerShape(16.dp))
+                    .clip(RoundedCornerShape(16.dp)),
+                fallbackColor = MediMartOrange,
+                fallbackLabel = "Ưu đãi chăm sóc sức khỏe"
             )
         }
 

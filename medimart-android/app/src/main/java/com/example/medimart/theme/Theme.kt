@@ -47,7 +47,9 @@ private val DarkColorScheme = darkColorScheme(
 
 @Composable
 fun MediMartTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    // The current screens are deliberately designed as a light retail experience.
+    // Keeping one palette avoids unreadable Material defaults on devices in dark mode.
+    darkTheme: Boolean = false,
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {

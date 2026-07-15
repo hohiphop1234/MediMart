@@ -11,17 +11,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 
 @Composable
 fun CountdownTimer(endTimeString: String) {
-    var timeLeft by remember { mutableIntStateOf(7200) }
+    val endTimeMillis = remember(endTimeString) { parseEndTime(endTimeString) }
+    var nowMillis by remember(endTimeMillis) { mutableLongStateOf(System.currentTimeMillis()) }
 
-    LaunchedEffect(Unit) {
-        while (timeLeft > 0) {
+    LaunchedEffect(endTimeMillis) {
+        while (endTimeMillis > System.currentTimeMillis()) {
             delay(1000)
-            timeLeft--
+            nowMillis = System.currentTimeMillis()
         }
     }
+
+    val timeLeft = ((endTimeMillis - nowMillis) / 1000).coerceAtLeast(0).toInt()
 
     val hours = timeLeft / 3600
     val minutes = (timeLeft % 3600) / 60
@@ -37,6 +43,14 @@ fun CountdownTimer(endTimeString: String) {
         Text(":", color = Color.White, style = MaterialTheme.typography.titleMedium)
         TimeBox(String.format("%02d", seconds))
     }
+}
+
+private fun parseEndTime(value: String): Long {
+    return runCatching {
+        SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).apply {
+            timeZone = TimeZone.getTimeZone("UTC")
+        }.parse(value)?.time ?: 0L
+    }.getOrDefault(0L)
 }
 
 @Composable

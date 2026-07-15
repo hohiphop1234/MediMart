@@ -7,6 +7,8 @@ val MediMartOrange = Color(0xFFFF9800)
 val MediMartOrangeLight = Color(0xFFFFCC80) // Lighter pastel orange
 val MediMartOrangeDark = Color(0xFFF57C00)
 val MediMartOrangeSoft = Color(0xFFFFF3E0) // Very soft orange for backgrounds
+val MediMartDisabledSurface = Color(0xFFFFE0A3)
+val MediMartDisabledContent = Color(0xFF8A5200)
 
 val MediMartWhite = Color(0xFFFFFFFF)
 val MediMartBg = Color(0xFFF8F9FA) // Very soft cool gray for contrast
