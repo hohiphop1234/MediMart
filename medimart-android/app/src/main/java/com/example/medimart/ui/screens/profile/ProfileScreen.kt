@@ -47,7 +47,7 @@ fun ProfileScreen(viewModel: ProfileViewModel, onLogout: () -> Unit) {
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    user?.phone ?: if (isLoading) "Đang tải thông tin..." else "Chưa thể tải thông tin",
+                    user?.email ?: if (isLoading) "Đang tải thông tin..." else "Chưa thể tải thông tin",
                     color = Color.White.copy(alpha = 0.8f)
                 )
                 Spacer(modifier = Modifier.height(8.dp))

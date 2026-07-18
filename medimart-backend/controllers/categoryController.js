@@ -1,8 +1,14 @@
-const Category = require('../models/Category');
+const { getSupabaseAdmin } = require('../config/supabase');
+const { serializeCategory } = require('../utils/serializers');
+
 exports.getCategories = async (req, res) => {
     try {
-        const categories = await Category.find();
-        res.json(categories);
+        const { data, error } = await getSupabaseAdmin()
+            .from('categories')
+            .select('*')
+            .order('name');
+        if (error) throw error;
+        res.json(data.map(serializeCategory));
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

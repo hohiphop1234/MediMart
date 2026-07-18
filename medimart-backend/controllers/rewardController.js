@@ -1,11 +1,18 @@
-const Product = require('../models/Product');
-const User = require('../models/User');
+const { getSupabaseUserClient } = require('../config/supabase');
+const { serializeProduct } = require('../utils/serializers');
 
 exports.getRewards = async (req, res) => {
     try {
-        const maxPoints = req.query.maxPoints || 999999;
-        const rewards = await Product.find({ isRewardItem: true, pointPrice: { $lte: maxPoints } });
-        res.json(rewards);
+        const rawMaxPoints = Number(req.query.maxPoints);
+        const maxPoints = Number.isFinite(rawMaxPoints) && rawMaxPoints >= 0 ? rawMaxPoints : 999999;
+        const { data, error } = await getSupabaseUserClient(req.accessToken)
+            .from('products')
+            .select('*')
+            .eq('is_reward_item', true)
+            .lte('point_price', maxPoints)
+            .order('point_price');
+        if (error) throw error;
+        res.json(data.map(serializeProduct));
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -13,21 +20,14 @@ exports.getRewards = async (req, res) => {
 
 exports.redeemReward = async (req, res) => {
     try {
-        const { rewardId } = req.body;
-        const product = await Product.findById(rewardId);
-        if (!product || !product.isRewardItem) {
-            return res.status(404).json({ error: 'Reward not found' });
-        }
+        const productId = typeof req.body.rewardId === 'string' ? req.body.rewardId : '';
+        if (!productId) return res.status(400).json({ error: 'Reward id is required.' });
 
-        const user = await User.findById(req.user.userId);
-        if (user.loyaltyPoints < product.pointPrice) {
-            return res.status(400).json({ error: 'Not enough points' });
-        }
-
-        user.loyaltyPoints -= product.pointPrice;
-        await user.save();
-
-        res.json({ success: true, remainingPoints: user.loyaltyPoints });
+        const { data, error } = await getSupabaseUserClient(req.accessToken).rpc('redeem_reward', {
+            p_product_id: productId
+        });
+        if (error) return res.status(400).json({ error: error.message });
+        res.json({ success: true, remainingPoints: data.remaining_points });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
