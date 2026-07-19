@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
-    
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
 
@@ -21,37 +20,47 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
     private val _otpSuccess = MutableStateFlow(false)
     val otpSuccess = _otpSuccess.asStateFlow()
 
-    fun login(phone: String) {
-        if (phone.length < 10) {
-            _error.value = "Số điện thoại không hợp lệ"
+    fun login(email: String) {
+        if (!email.matches(Regex("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$"))) {
+            _error.value = "Email không hợp lệ"
             return
         }
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
-            authRepository.login(phone).fold(
+            authRepository.login(email).fold(
                 onSuccess = { _loginSuccess.value = true },
-                onFailure = { _error.value = it.message ?: "Lỗi đăng nhập" }
+                onFailure = { _error.value = it.message ?: "Không thể gửi mã xác thực" }
             )
             _isLoading.value = false
         }
     }
 
-    fun verifyOtp(phone: String, otp: String) {
-        if (otp.length != 4) {
-            _error.value = "Mã OTP phải gồm 4 số"
+    fun verifyOtp(email: String, otp: String) {
+        if (otp.length != 6) {
+            _error.value = "Mã OTP phải gồm 6 số"
             return
         }
         viewModelScope.launch {
             _isLoading.value = true
             _error.value = null
-            authRepository.verifyOtp(phone, otp).fold(
+            authRepository.verifyOtp(email, otp).fold(
                 onSuccess = { _otpSuccess.value = true },
-                onFailure = { _error.value = it.message ?: "Mã OTP không đúng" }
+                onFailure = { _error.value = it.message ?: "Mã OTP không đúng hoặc đã hết hạn" }
             )
             _isLoading.value = false
         }
     }
 
-    fun clearError() { _error.value = null }
+    fun clearError() {
+        _error.value = null
+    }
+
+    fun consumeLoginSuccess() {
+        _loginSuccess.value = false
+    }
+
+    fun consumeOtpSuccess() {
+        _otpSuccess.value = false
+    }
 }
