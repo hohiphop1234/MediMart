@@ -1,45 +1,39 @@
-const Order = require('../models/Order');
-const Product = require('../models/Product');
-const User = require('../models/User');
+const { getSupabaseUserClient } = require('../config/supabase');
+
+function serializeOrder(order) {
+    return {
+        _id: order.id,
+        totalAmount: Number(order.total_amount),
+        status: order.status,
+        paymentMethod: order.payment_method,
+        createdAt: order.created_at
+    };
+}
 
 exports.checkout = async (req, res) => {
     try {
-        const { items, addressId, paymentMethod } = req.body;
-        if (!items || items.length === 0) return res.status(400).json({ error: 'Cart is empty' });
-
-        let totalAmount = 0;
-        const orderItems = [];
-
-        for (let item of items) {
-            const product = await Product.findById(item.productId);
-            if (!product) return res.status(404).json({ error: `Product not found: ${item.productId}` });
-            
-            const currentPrice = product.salePrice || product.price;
-            totalAmount += currentPrice * item.quantity;
-
-            orderItems.push({
-                productId: product._id,
-                name: product.name,
-                quantity: item.quantity,
-                price: currentPrice
-            });
+        const { items, addressId, paymentMethod = 'COD' } = req.body;
+        if (!Array.isArray(items) || !items.length || !addressId) {
+            return res.status(400).json({ error: 'Cart items and an address are required.' });
         }
 
-        const order = new Order({
-            userId: req.user.userId,
-            items: orderItems,
-            totalAmount,
-            addressId,
-            paymentMethod: paymentMethod || 'COD',
-            status: 'PENDING'
+        const normalizedItems = items.map((item) => ({
+            product_id: item.productId,
+            quantity: Number(item.quantity)
+        }));
+        const { data, error } = await getSupabaseUserClient(req.accessToken).rpc('checkout', {
+            p_items: normalizedItems,
+            p_address_id: addressId,
+            p_payment_method: paymentMethod
         });
+        if (error) return res.status(400).json({ error: error.message });
 
-        await order.save();
-
-        const earnedPoints = Math.floor(totalAmount / 10000);
-        await User.findByIdAndUpdate(req.user.userId, { $inc: { loyaltyPoints: earnedPoints } });
-
-        res.json({ orderId: order._id, totalAmount, status: order.status });
+        res.status(201).json({
+            orderId: data.order_id,
+            totalAmount: Number(data.total_amount),
+            earnedPoints: data.earned_points,
+            status: data.status
+        });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -47,12 +41,17 @@ exports.checkout = async (req, res) => {
 
 exports.getMyOrders = async (req, res) => {
     try {
-        const { status } = req.query;
-        const query = { userId: req.user.userId };
-        if (status) query.status = status;
+        const allowedStatuses = new Set(['PENDING', 'SHIPPING', 'DELIVERED', 'RETURNED', 'CANCELLED']);
+        const status = typeof req.query.status === 'string' ? req.query.status : '';
+        let query = getSupabaseUserClient(req.accessToken)
+            .from('orders')
+            .select('*')
+            .order('created_at', { ascending: false });
+        if (allowedStatuses.has(status)) query = query.eq('status', status);
 
-        const orders = await Order.find(query).sort({ createdAt: -1 });
-        res.json(orders);
+        const { data, error } = await query;
+        if (error) throw error;
+        res.json(data.map(serializeOrder));
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

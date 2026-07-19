@@ -8,6 +8,8 @@ import com.example.medimart.data.model.Product
 import com.example.medimart.data.repository.ProductRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.launch
 
 class HomeViewModel(private val productRepository: ProductRepository) : ViewModel() {
@@ -29,6 +31,9 @@ class HomeViewModel(private val productRepository: ProductRepository) : ViewMode
     private val _isLoading = MutableStateFlow(true)
     val isLoading = _isLoading.asStateFlow()
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error = _error.asStateFlow()
+
     init {
         loadHomeData()
     }
@@ -36,17 +41,34 @@ class HomeViewModel(private val productRepository: ProductRepository) : ViewMode
     fun loadHomeData() {
         viewModelScope.launch {
             _isLoading.value = true
-            
-            launch { productRepository.getBanners().onSuccess { _banners.value = it } }
-            launch { productRepository.getCategories().onSuccess { _categories.value = it } }
-            launch { 
-                productRepository.getFlashSale().onSuccess {
-                    _flashSaleProducts.value = it.products
-                    _flashSaleEndTime.value = it.endTime
-                } 
-            }
-            launch { productRepository.getBestSellers().onSuccess { _bestSellers.value = it } }
-            
+            _error.value = null
+
+            listOf(
+                async {
+                    productRepository.getBanners()
+                        .onSuccess { _banners.value = it }
+                        .onFailure { _error.value = it.message ?: "Không tải được banner" }
+                },
+                async {
+                    productRepository.getCategories()
+                        .onSuccess { _categories.value = it }
+                        .onFailure { _error.value = it.message ?: "Không tải được danh mục" }
+                },
+                async {
+                    productRepository.getFlashSale()
+                        .onSuccess {
+                            _flashSaleProducts.value = it.products
+                            _flashSaleEndTime.value = it.endTime
+                        }
+                        .onFailure { _error.value = it.message ?: "Không tải được Flash Sale" }
+                },
+                async {
+                    productRepository.getBestSellers()
+                        .onSuccess { _bestSellers.value = it }
+                        .onFailure { _error.value = it.message ?: "Không tải được sản phẩm" }
+                }
+            ).awaitAll()
+
             _isLoading.value = false
         }
     }

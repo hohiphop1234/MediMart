@@ -1,3 +1,17 @@
+import java.util.Properties
+
+val localProperties = Properties().apply {
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        localPropertiesFile.inputStream().use(::load)
+    }
+}
+
+fun localBuildConfigValue(name: String): String =
+    localProperties.getProperty(name, "")
+        .replace("\\", "\\\\")
+        .replace("\"", "\\\"")
+
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.compose.compiler)
@@ -14,6 +28,8 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+        buildConfigField("String", "SUPABASE_URL", "\"${localBuildConfigValue("supabase.url")}\"")
+        buildConfigField("String", "SUPABASE_PUBLISHABLE_KEY", "\"${localBuildConfigValue("supabase.publishableKey")}\"")
     }
 
     buildTypes {
@@ -29,7 +45,7 @@ android {
     buildFeatures {
       compose = true
       aidl = false
-      buildConfig = false
+      buildConfig = true
       shaders = false
     }
 
@@ -106,4 +122,11 @@ dependencies {
 
   // Serialization
   implementation(libs.kotlinx.serialization.json)
+
+  // Supabase: Auth, PostgREST and Storage. Values are loaded from ignored local.properties.
+  implementation(platform(libs.supabase.bom))
+  implementation(libs.supabase.gotrue)
+  implementation(libs.supabase.postgrest)
+  implementation(libs.supabase.storage)
+  implementation(libs.ktor.client.okhttp)
 }

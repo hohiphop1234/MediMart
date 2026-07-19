@@ -14,19 +14,21 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.example.medimart.data.model.Product
 import com.example.medimart.theme.MediMartBg
 import com.example.medimart.theme.MediMartOrange
+import com.example.medimart.theme.MediMartOrangeSoft
 import com.example.medimart.theme.MediMartTextPrimary
 import com.example.medimart.ui.components.BannerSlider
 import com.example.medimart.ui.components.CountdownTimer
 import com.example.medimart.ui.components.ProductCard
 import com.example.medimart.ui.components.SearchBar
+import com.example.medimart.ui.components.RemoteImage
+import kotlin.math.ceil
 
 @Composable
 fun HomeScreen(
@@ -40,12 +42,41 @@ fun HomeScreen(
     val flashSaleEndTime by viewModel.flashSaleEndTime.collectAsState()
     val bestSellers by viewModel.bestSellers.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
 
     var searchQuery by remember { mutableStateOf("") }
 
     if (isLoading && banners.isEmpty() && categories.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize().background(MediMartBg), contentAlignment = Alignment.Center) {
             CircularProgressIndicator(color = MediMartOrange)
+        }
+        return
+    }
+
+    if (error != null && banners.isEmpty() && categories.isEmpty()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MediMartBg)
+                .padding(24.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "Không thể tải trang chủ",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MediMartTextPrimary
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(error ?: "Vui lòng thử lại", textAlign = TextAlign.Center)
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = viewModel::loadHomeData,
+                    colors = ButtonDefaults.buttonColors(containerColor = MediMartOrange)
+                ) {
+                    Text("Thử lại")
+                }
+            }
         }
         return
     }
@@ -72,10 +103,11 @@ fun HomeScreen(
             modifier = Modifier.padding(horizontal = 16.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))
+        val categoryRows = maxOf(1, ceil(categories.size / 4.0).toInt())
         LazyVerticalGrid(
             columns = GridCells.Fixed(4),
             modifier = Modifier
-                .height(200.dp)
+                .height((categoryRows * 120).dp)
                 .padding(horizontal = 16.dp),
             userScrollEnabled = false,
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -83,19 +115,15 @@ fun HomeScreen(
         ) {
             items(categories) { category ->
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(
+                    RemoteImage(
+                        imageUrl = category.icon,
+                        contentDescription = category.name,
+                        contentScale = androidx.compose.ui.layout.ContentScale.Inside,
                         modifier = Modifier
                             .size(56.dp)
-                            .background(Color.White, RoundedCornerShape(16.dp)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        AsyncImage(
-                            model = category.icon,
-                            contentDescription = category.name,
-                            contentScale = ContentScale.Inside,
-                            modifier = Modifier.size(32.dp)
-                        )
-                    }
+                            .clip(RoundedCornerShape(16.dp)),
+                        fallbackColor = MediMartOrangeSoft
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = category.name,

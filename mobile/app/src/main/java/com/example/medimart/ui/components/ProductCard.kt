@@ -19,7 +19,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import com.example.medimart.data.model.Product
 import com.example.medimart.theme.MediMartOrange
 import com.example.medimart.theme.MediMartRed
@@ -50,14 +49,15 @@ fun ProductCard(
     ) {
         Column {
             Box {
-                AsyncImage(
-                    model = product.imageUrl,
+                RemoteImage(
+                    imageUrl = product.imageUrl,
                     contentDescription = product.name,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .fillMaxWidth()
                         .aspectRatio(1f)
-                        .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                        .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)),
+                    fallbackColor = Color(0xFFFFD9A0)
                 )
                 if (product.isFlashSale) {
                     Box(

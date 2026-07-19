@@ -1,6 +1,8 @@
 package com.example.medimart.ui.screens.checkout
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -16,6 +18,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.medimart.theme.MediMartBg
+import com.example.medimart.theme.MediMartDisabledContent
+import com.example.medimart.theme.MediMartDisabledSurface
 import com.example.medimart.theme.MediMartOrange
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -33,6 +37,7 @@ fun CheckoutScreen(
 
     val totalAmount = items.sumOf { it.price * it.quantity }
     val defaultAddress = addresses.firstOrNull { it.isDefault } ?: addresses.firstOrNull()
+    val canCheckout = !isLoading && defaultAddress != null && items.isNotEmpty()
 
     LaunchedEffect(checkoutSuccess) {
         if (checkoutSuccess) {
@@ -53,7 +58,7 @@ fun CheckoutScreen(
         bottomBar = {
             Surface(shadowElevation = 16.dp, color = Color.White) {
                 Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp).padding(bottom = 80.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -70,22 +75,34 @@ fun CheckoutScreen(
                         shape = RoundedCornerShape(percent = 50),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MediMartOrange,
-                            disabledContainerColor = MediMartOrange.copy(alpha = 0.5f)
+                            disabledContainerColor = MediMartDisabledSurface,
+                            disabledContentColor = MediMartDisabledContent
                         ),
                         modifier = Modifier.height(50.dp).padding(horizontal = 16.dp),
-                        enabled = !isLoading && defaultAddress != null && items.isNotEmpty()
+                        enabled = canCheckout
                     ) {
                         if (isLoading) {
-                            CircularProgressIndicator(color = Color.White, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+                            CircularProgressIndicator(color = MediMartDisabledContent, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
                         } else {
-                            Text("Đặt hàng", style = MaterialTheme.typography.titleMedium, color = Color.White)
+                            Text(
+                                "Đặt hàng",
+                                style = MaterialTheme.typography.titleMedium,
+                                color = if (canCheckout) Color.White else MediMartDisabledContent
+                            )
                         }
                     }
                 }
             }
         }
     ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().background(MediMartBg).padding(padding).padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MediMartBg)
+                .padding(padding)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState())
+        ) {
             if (error != null) {
                 Text(error!!, color = MaterialTheme.colorScheme.error)
                 Spacer(modifier = Modifier.height(8.dp))
@@ -101,13 +118,22 @@ fun CheckoutScreen(
                 Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.LocationOn, contentDescription = null, tint = MediMartOrange)
                     Spacer(modifier = Modifier.width(16.dp))
-                    if (defaultAddress != null) {
+                    if (isLoading && addresses.isEmpty()) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(28.dp),
+                            color = MediMartOrange,
+                            strokeWidth = 2.dp
+                        )
+                    } else if (defaultAddress != null) {
                         Column {
                             Text("${defaultAddress.name} - ${defaultAddress.phone}", fontWeight = FontWeight.Bold)
                             Text(defaultAddress.address, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
                         }
                     } else {
-                        Text("Chưa có địa chỉ. Vui lòng thêm địa chỉ.", color = Color.Gray)
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Chưa có địa chỉ giao hàng", color = Color.Gray)
+                            TextButton(onClick = viewModel::loadAddresses) { Text("Tải lại") }
+                        }
                     }
                 }
             }

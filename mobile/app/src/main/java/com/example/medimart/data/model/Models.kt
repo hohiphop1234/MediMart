@@ -3,7 +3,7 @@ package com.example.medimart.data.model
 data class User(
     val _id: String,
     val name: String,
-    val phone: String,
+    val email: String,
     val loyaltyPoints: Int
 )
 
@@ -53,8 +53,8 @@ data class Order(
     val createdAt: String
 )
 
-data class LoginRequest(val phone: String)
-data class OtpRequest(val phone: String, val otp: String)
+data class LoginRequest(val email: String)
+data class OtpRequest(val email: String, val otp: String)
 data class AuthResponse(val token: String, val user: User)
 
 data class FlashSaleResponse(

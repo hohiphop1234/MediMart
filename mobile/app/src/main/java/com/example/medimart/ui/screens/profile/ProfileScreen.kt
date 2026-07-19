@@ -24,6 +24,8 @@ import com.example.medimart.theme.MediMartOrange
 @Composable
 fun ProfileScreen(viewModel: ProfileViewModel, onLogout: () -> Unit) {
     val user by viewModel.user.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize().background(MediMartBg)) {
         Box(
@@ -38,16 +40,45 @@ fun ProfileScreen(viewModel: ProfileViewModel, onLogout: () -> Unit) {
                     Icon(Icons.Default.Person, contentDescription = null, tint = MediMartOrange, modifier = Modifier.size(40.dp))
                 }
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(user?.name ?: "Khách hàng", color = Color.White, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
-                Text(user?.phone ?: "Đang tải...", color = Color.White.copy(alpha = 0.8f))
+                Text(
+                    user?.name ?: if (isLoading) "Đang tải..." else "Khách hàng",
+                    color = Color.White,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    user?.email ?: if (isLoading) "Đang tải thông tin..." else "Chưa thể tải thông tin",
+                    color = Color.White.copy(alpha = 0.8f)
+                )
                 Spacer(modifier = Modifier.height(8.dp))
                 Box(modifier = Modifier.background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(16.dp)).padding(horizontal = 16.dp, vertical = 4.dp)) {
-                    Text("${user?.loyaltyPoints ?: 0} Điểm", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(
+                        if (user != null) "${user!!.loyaltyPoints} Điểm" else "Điểm thành viên",
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
         
         Spacer(modifier = Modifier.height(24.dp))
+
+        if (error != null) {
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF1F1)),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(error!!, modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.error)
+                    TextButton(onClick = viewModel::loadProfile) { Text("Thử lại") }
+                }
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
 
         Card(
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
