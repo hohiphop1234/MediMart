@@ -1,2 +1,8 @@
 /models/*
 /.venv
+.env
+/llama-b9850-bin-win-vulkan-x64
+.agents
+llama_log.txt
+scratch
+**/__pycache__/
