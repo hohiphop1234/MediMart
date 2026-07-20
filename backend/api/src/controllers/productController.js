@@ -1,4 +1,4 @@
-const { getSupabaseAdmin } = require('../config/supabase');
+const productService = require('../services/productService');
 const { serializeProduct } = require('../utils/serializers');
 
 function endOfToday() {
@@ -9,19 +9,13 @@ function endOfToday() {
 
 exports.getFlashSale = async (req, res) => {
     try {
-        const { data, error } = await getSupabaseAdmin()
-            .from('products')
-            .select('*')
-            .eq('is_flash_sale', true)
-            .order('created_at', { ascending: false });
-        if (error) throw error;
-
-        const scheduledEndTimes = data
+        const products = await productService.getFlashSale();
+        const scheduledEndTimes = products
             .map((product) => product.flash_sale_ends_at)
             .filter(Boolean)
             .sort();
         res.json({
-            products: data.map(serializeProduct),
+            products: products.map(serializeProduct),
             endTime: scheduledEndTimes[0] || endOfToday()
         });
     } catch (err) {
@@ -31,13 +25,8 @@ exports.getFlashSale = async (req, res) => {
 
 exports.getBestSellers = async (req, res) => {
     try {
-        const { data, error } = await getSupabaseAdmin()
-            .from('products')
-            .select('*')
-            .eq('is_best_seller', true)
-            .order('created_at', { ascending: false });
-        if (error) throw error;
-        res.json(data.map(serializeProduct));
+        const products = await productService.getBestSellers();
+        res.json(products.map(serializeProduct));
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -46,12 +35,71 @@ exports.getBestSellers = async (req, res) => {
 exports.searchProducts = async (req, res) => {
     try {
         const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
-        let query = getSupabaseAdmin().from('products').select('*').order('created_at', { ascending: false });
-        if (q) query = query.ilike('name', `%${q}%`);
+        const products = await productService.searchProducts(q);
+        res.json(products.map(serializeProduct));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
 
-        const { data, error } = await query;
-        if (error) throw error;
-        res.json(data.map(serializeProduct));
+// --- Admin APIs ---
+
+exports.getAllProducts = async (req, res) => {
+    try {
+        const products = await productService.getAllProducts();
+        res.json(products); // Admin might not need strict serialization, can return full data
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.getProductById = async (req, res) => {
+    try {
+        const product = await productService.getProductById(req.params.id);
+        if (!product) return res.status(404).json({ error: 'Product not found' });
+        res.json(product);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.createProduct = async (req, res) => {
+    try {
+        const newProduct = await productService.createProduct(req.body);
+        res.status(201).json(newProduct);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.updateProduct = async (req, res) => {
+    try {
+        const updatedProduct = await productService.updateProduct(req.params.id, req.body);
+        res.json(updatedProduct);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.deleteProduct = async (req, res) => {
+    try {
+        await productService.deleteProduct(req.params.id);
+        res.json({ message: 'Product deleted successfully' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+// --- Internal API for Python ---
+
+exports.getSimilarProducts = async (req, res) => {
+    try {
+        const { medicineName } = req.body;
+        if (!medicineName) {
+            return res.status(400).json({ error: 'medicineName is required' });
+        }
+        const products = await productService.getSimilarProducts(medicineName);
+        res.json(products.map(serializeProduct));
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

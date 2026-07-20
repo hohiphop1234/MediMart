@@ -1,4 +1,4 @@
-const { getSupabaseUserClient } = require('../config/supabase');
+const orderService = require('../services/orderService');
 
 function serializeOrder(order) {
     return {
@@ -17,17 +17,8 @@ exports.checkout = async (req, res) => {
             return res.status(400).json({ error: 'Cart items and an address are required.' });
         }
 
-        const normalizedItems = items.map((item) => ({
-            product_id: item.productId,
-            quantity: Number(item.quantity)
-        }));
-        const { data, error } = await getSupabaseUserClient(req.accessToken).rpc('checkout', {
-            p_items: normalizedItems,
-            p_address_id: addressId,
-            p_payment_method: paymentMethod
-        });
-        if (error) return res.status(400).json({ error: error.message });
-
+        const data = await orderService.checkout(items, addressId, paymentMethod, req.accessToken);
+        
         res.status(201).json({
             orderId: data.order_id,
             totalAmount: Number(data.total_amount),
@@ -41,17 +32,41 @@ exports.checkout = async (req, res) => {
 
 exports.getMyOrders = async (req, res) => {
     try {
-        const allowedStatuses = new Set(['PENDING', 'SHIPPING', 'DELIVERED', 'RETURNED', 'CANCELLED']);
         const status = typeof req.query.status === 'string' ? req.query.status : '';
-        let query = getSupabaseUserClient(req.accessToken)
-            .from('orders')
-            .select('*')
-            .order('created_at', { ascending: false });
-        if (allowedStatuses.has(status)) query = query.eq('status', status);
+        const orders = await orderService.getMyOrders(req.user.userId, status);
+        res.json(orders.map(serializeOrder));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
 
-        const { data, error } = await query;
-        if (error) throw error;
-        res.json(data.map(serializeOrder));
+// --- Admin APIs ---
+
+exports.getAllOrders = async (req, res) => {
+    try {
+        const orders = await orderService.getAllOrders();
+        res.json(orders);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.getOrderById = async (req, res) => {
+    try {
+        const order = await orderService.getOrderById(req.params.id);
+        if (!order) return res.status(404).json({ error: 'Order not found' });
+        res.json(order);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+exports.updateOrderStatus = async (req, res) => {
+    try {
+        const { status } = req.body;
+        if (!status) return res.status(400).json({ error: 'Status is required' });
+        const updatedOrder = await orderService.updateOrderStatus(req.params.id, status);
+        res.json(updatedOrder);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

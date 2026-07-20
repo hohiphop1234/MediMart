@@ -3,9 +3,13 @@ const router = express.Router();
 const orderController = require('../controllers/orderController');
 const auth = require('../middlewares/auth');
 
-router.use(auth);
+// User endpoints
+router.post('/checkout', auth, orderController.checkout);
+router.get('/me', auth, orderController.getMyOrders);
 
-router.post('/checkout', orderController.checkout);
-router.get('/my-orders', orderController.getMyOrders);
+// Admin endpoints
+router.get('/', orderController.getAllOrders);
+router.get('/:id', orderController.getOrderById);
+router.put('/:id/status', orderController.updateOrderStatus);
 
 module.exports = router;
