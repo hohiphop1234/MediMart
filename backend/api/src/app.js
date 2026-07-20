@@ -21,6 +21,9 @@ app.use('/api/users', require('./routes/users'));
 app.use('/api/rewards', require('./routes/rewards'));
 app.use('/api/orders', require('./routes/orders'));
 
+// AI integration routes (/api/ocr, /api/chat)
+app.use('/api', require('./routes/ai'));
+
 // Health check route
 app.get('/', (req, res) => res.json({ message: 'MediMart Supabase API is running (Prisma ORM)' }));
 
