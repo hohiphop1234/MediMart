@@ -1,7 +1,7 @@
 /models/*
 /.venv
 .env
-/llama-b9850-bin-win-vulkan-x64
+/llama-b10069-bin-win-vulkan-x64
 .agents
 llama_log.txt
 scratch

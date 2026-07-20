@@ -14,6 +14,7 @@ from langgraph.graph import StateGraph, START, END
 from app.schemas.ocr import PrescriptionData
 from app.utils.image_processing import process_prescription_image
 from app.core.config import LLAMA_API_URL
+from app.prompts import OCR_SYSTEM_PROMPT, OCR_HUMAN_PROMPT
 
 logger = logging.getLogger(__name__)
 
@@ -65,26 +66,13 @@ def llm_parsing_node(state: OCRState) -> dict:
         api_key="not-needed",
         temperature=0.0,
         max_tokens=1000,
-        model_kwargs={"stop": ["<|im_end|>", "</s>"]}
+        stop=["<|im_end|>", "</s>"]
     )
     
     # Create prompt
     prompt = ChatPromptTemplate.from_messages([
-        ("system", "Bạn là một chuyên gia y tế chuyên trích xuất thông tin đơn thuốc.\n"
-                   "Nhiệm vụ của bạn là đọc đoạn văn bản được OCR từ đơn thuốc, sau đó trích xuất ra danh sách các loại thuốc (product_name) "
-                   "và số lượng hoặc hướng dẫn sử dụng (quantity). Hãy bỏ qua các thông tin rác không phải là thuốc.\n\n"
-                   "BẮT BUỘC trả về kết quả dưới dạng JSON có cấu trúc như sau:\n"
-                   "{{\n"
-                   "  \"medicines\": [\n"
-                   "    {{\n"
-                   "      \"product_name\": \"tên thuốc\",\n"
-                   "      \"quantity\": \"số lượng hoặc liều dùng\"\n"
-                   "    }}\n"
-                   "  ],\n"
-                   "  \"notes\": \"ghi chú thêm nếu có\"\n"
-                   "}}\n"
-                   "Chỉ trả về JSON hợp lệ, KHÔNG giải thích gì thêm, KHÔNG đặt trong block markdown ```json...```."),
-        ("human", "Văn bản OCR:\n{ocr_text}")
+        ("system", OCR_SYSTEM_PROMPT),
+        ("human", OCR_HUMAN_PROMPT)
     ])
     
     chain = prompt | llm

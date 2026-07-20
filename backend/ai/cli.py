@@ -2,6 +2,7 @@
 import sys
 import json
 import httpx
+from app.prompts import CHAT_SYSTEM_PROMPT
 
 # Reconfigure stdout and stdin to use UTF-8 to prevent encoding issues on Windows consoles
 if hasattr(sys.stdout, 'reconfigure'):
@@ -33,13 +34,7 @@ def print_header():
 
 def chat_loop():
     # Prompt hệ thống ngắn gọn, tối ưu để mô hình Qwen 4B phản hồi trực tiếp, tránh lặp lại giới thiệu
-    system_prompt = (
-        "Bạn là bác sĩ tư vấn sức khỏe ảo của MediMart. "
-        "Hãy tập trung trả lời TRỰC TIẾP vào triệu chứng hoặc thắc mắc của người dùng ngay từ câu đầu tiên. "
-        "Không lặp lại lời giới thiệu bản thân hay các câu xã giao dài dòng không cần thiết. "
-        "Cung cấp thông tin y khoa hữu ích, nguyên nhân và gợi ý thuốc không kê đơn (OTC) nếu có, "
-        "và khuyên người dùng đi khám bác sĩ ở cuối câu trả lời nếu triệu chứng nặng."
-    )
+    system_prompt = CHAT_SYSTEM_PROMPT
     
     messages = [
         {"role": "system", "content": system_prompt}
