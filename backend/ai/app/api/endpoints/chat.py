@@ -3,6 +3,7 @@ from fastapi.responses import StreamingResponse
 import httpx
 import logging
 
+from app.prompts import CHAT_SYSTEM_PROMPT
 from app.schemas.ocr import ChatCompletionRequest
 from app.api.deps import get_http_client
 from app.core.config import LLAMA_API_URL
@@ -13,6 +14,14 @@ logger = logging.getLogger(__name__)
 @router.post("/chat")
 async def chat_endpoint(request: ChatCompletionRequest, client: httpx.AsyncClient = Depends(get_http_client)):
     body = request.model_dump(exclude_none=True)
+    
+    # Ensure CHAT_SYSTEM_PROMPT is prepended to messages if not already present
+    messages = body.get("messages", [])
+    has_system = any(msg.get("role") == "system" for msg in messages)
+    if not has_system:
+        messages.insert(0, {"role": "system", "content": CHAT_SYSTEM_PROMPT})
+        body["messages"] = messages
+
     is_stream = body.get("stream", False)
     
     try:

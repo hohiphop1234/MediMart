@@ -6,7 +6,11 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "prisma:generate": "prisma generate",
+    "postinstall": "prisma generate",
     "seed": "node scripts/seedCatalog.js",
+    "seed:legacy": "node seed/seed.js",
+    "crawl:longchau": "node seed/crawl_longchau.js",
     "import:longchau": "node scripts/importLongChauCatalog.js",
     "import:longchau-images": "node scripts/importLongChauImages.js",
     "import:longchau-catalog": "node scripts/importLongChauCatalogBatch.js"
@@ -27,5 +31,8 @@
   "devDependencies": {
     "nodemon": "^3.0.3",
     "prisma": "^7.8.0"
-  }
+  },
+  "trustedDependencies": [
+    "protobufjs"
+  ]
 }

@@ -9,7 +9,9 @@
     <!-- FontAwesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=1.0.1">
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
 <body>
     <div class="dashboard-container">
@@ -37,6 +39,10 @@
                 <li data-target="orders-section">
                     <i class="fa-solid fa-cart-shopping"></i>
                     <span>Orders</span>
+                </li>
+                <li data-target="ai-section">
+                    <i class="fa-solid fa-robot"></i>
+                    <span>AI Testing</span>
                 </li>
             </ul>
         </aside>
@@ -159,6 +165,99 @@
                         </table>
                     </div>
                 </section>
+
+                <!-- AI Testing Section -->
+                <section id="ai-section" class="content-section">
+                    <div class="section-header">
+                        <h1>AI Features Testing</h1>
+                    </div>
+                    
+                    <!-- Auth Token Config -->
+                    <div class="auth-config-card glass">
+                        <div class="card-header">
+                            <i class="fa-solid fa-key"></i>
+                            <h3>Supabase Authorization Access Token</h3>
+                        </div>
+                        <p class="description">Required to authenticate requests to the AI API endpoints (since they are protected by JWT auth).</p>
+                        <div class="token-input-row">
+                            <input type="password" id="auth-token-input" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...">
+                            <button id="save-token-btn" class="btn btn-primary" onclick="saveAuthToken()"><i class="fa-solid fa-floppy-disk"></i> Save Token</button>
+                            <button id="clear-token-btn" class="btn btn-secondary" onclick="clearAuthToken()"><i class="fa-solid fa-trash-can"></i> Clear</button>
+                        </div>
+                        <div id="token-status" class="token-status-msg"></div>
+                    </div>
+
+                    <div class="ai-grid">
+                        <!-- Chatbot Test Panel -->
+                        <div class="ai-panel chat-panel glass">
+                            <div class="panel-header">
+                                <i class="fa-solid fa-comments"></i>
+                                <h2>Medical Chat Consultant</h2>
+                            </div>
+                            <div class="chat-container">
+                                <div class="chat-messages" id="chat-messages-container">
+                                    <div class="message system-message">
+                                        <div class="message-content">Hello! I am the MediMart AI health assistant. How can I help you today?</div>
+                                    </div>
+                                </div>
+                                <div class="chat-input-area">
+                                    <input type="text" id="chat-user-input" placeholder="Type a health question..." onkeydown="if(event.key === 'Enter') sendChatMessage()">
+                                    <button class="btn btn-primary btn-send" onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- OCR Test Panel -->
+                        <div class="ai-panel ocr-panel glass">
+                            <div class="panel-header">
+                                <i class="fa-solid fa-file-prescription"></i>
+                                <h2>Prescription OCR Parser</h2>
+                            </div>
+                            <div class="ocr-container">
+                                <div class="upload-zone" id="ocr-upload-zone">
+                                    <i class="fa-solid fa-cloud-arrow-up upload-icon"></i>
+                                    <p>Drag and drop prescription image here, or <span>browse file</span></p>
+                                    <input type="file" id="ocr-file-input" accept="image/*" class="hidden">
+                                </div>
+                                <div class="ocr-preview-area hidden" id="ocr-preview-area">
+                                    <img id="ocr-image-preview" src="" alt="Prescription Preview">
+                                    <button class="btn btn-secondary btn-remove-img" onclick="removeOCRImage()"><i class="fa-solid fa-xmark"></i> Remove</button>
+                                </div>
+                                <div class="ocr-actions">
+                                    <button class="btn btn-primary w-100" id="btn-run-ocr" onclick="runOCR()" disabled><i class="fa-solid fa-wand-magic-sparkles"></i> Process Prescription</button>
+                                </div>
+                                <div class="ocr-results hidden" id="ocr-results-area">
+                                    <div class="tabs-header">
+                                        <button class="tab-btn active" onclick="switchOCRTab(event, 'ocr-structured')">Structured Data</button>
+                                        <button class="tab-btn" onclick="switchOCRTab(event, 'ocr-raw')">Raw Text</button>
+                                    </div>
+                                    <div class="tab-content active" id="ocr-structured">
+                                        <div class="medicines-table-container">
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        <th>Extracted Medicine</th>
+                                                        <th>Database Matches (Top-3)</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="ocr-medicines-tbody">
+                                                    <!-- Structured medicine data -->
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div class="notes-container">
+                                            <h4>Notes:</h4>
+                                            <p id="ocr-notes-text">-</p>
+                                        </div>
+                                    </div>
+                                    <div class="tab-content" id="ocr-raw">
+                                        <pre id="ocr-raw-pre"></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             </div>
         </main>
     </div>
@@ -236,6 +335,6 @@
         </div>
     </div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=1.0.2"></script>
 </body>
 </html>

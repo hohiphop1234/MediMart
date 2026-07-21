@@ -55,10 +55,34 @@ exports.searchProducts = async (req, res) => {
 
 // --- Admin APIs ---
 
+function formatAdminProduct(p) {
+    return {
+        _id: p.id,
+        id: p.id,
+        name: p.name,
+        description: p.description || '',
+        price: Number(p.price),
+        salePrice: p.sale_price !== null && p.sale_price !== undefined ? Number(p.sale_price) : null,
+        unit: p.unit || '',
+        imagePath: p.image_path || '',
+        imageUrl: p.image_path || '',
+        categoryId: p.category_id,
+        category_id: p.category_id,
+        Category: p.categories ? { _id: p.categories.id, id: p.categories.id, name: p.categories.name } : null,
+        categories: p.categories,
+        brand: p.brand || '',
+        country: p.country || '',
+        isFlashSale: Boolean(p.is_flash_sale),
+        isBestSeller: Boolean(p.is_best_seller),
+        isRewardItem: Boolean(p.is_reward_item),
+        pointPrice: p.point_price
+    };
+}
+
 exports.getAllProducts = async (req, res) => {
     try {
         const products = await productService.getAllProducts();
-        res.json(products); // Admin might not need strict serialization, can return full data
+        res.json(products.map(formatAdminProduct));
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -77,7 +101,7 @@ exports.getProductById = async (req, res) => {
 exports.createProduct = async (req, res) => {
     try {
         const newProduct = await productService.createProduct(req.body);
-        res.status(201).json(newProduct);
+        res.status(201).json(formatAdminProduct(newProduct));
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -86,7 +110,7 @@ exports.createProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
     try {
         const updatedProduct = await productService.updateProduct(req.params.id, req.body);
-        res.json(updatedProduct);
+        res.json(formatAdminProduct(updatedProduct));
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
