@@ -1,6 +1,7 @@
 package com.example.medimart.data.repository
 
 import com.example.medimart.data.model.Address
+import com.example.medimart.data.model.AddressRequest
 import com.example.medimart.data.model.User
 import com.example.medimart.data.remote.ApiService
 
@@ -17,8 +18,8 @@ class UserRepository(private val apiService: ApiService) {
         Result.success(apiService.getAddresses())
     } catch (e: Exception) { Result.failure(e) }
 
-    suspend fun addAddress(address: Address): Result<Address> = try {
-        Result.success(apiService.addAddress(address))
+    suspend fun addAddress(request: AddressRequest): Result<Address> = try {
+        Result.success(apiService.addAddress(request))
     } catch (e: Exception) { Result.failure(e) }
 
     suspend fun deleteAddress(id: String): Result<Boolean> = try {

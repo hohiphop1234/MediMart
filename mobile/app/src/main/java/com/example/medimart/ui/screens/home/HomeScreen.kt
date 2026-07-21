@@ -1,6 +1,7 @@
 package com.example.medimart.ui.screens.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -18,23 +19,25 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.medimart.data.model.Category
 import com.example.medimart.data.model.Product
 import com.example.medimart.theme.MediMartBg
 import com.example.medimart.theme.MediMartOrange
-import com.example.medimart.theme.MediMartOrangeSoft
 import com.example.medimart.theme.MediMartTextPrimary
 import com.example.medimart.ui.components.BannerSlider
+import com.example.medimart.ui.components.CategoryIcon
 import com.example.medimart.ui.components.CountdownTimer
 import com.example.medimart.ui.components.ProductCard
 import com.example.medimart.ui.components.SearchBar
-import com.example.medimart.ui.components.RemoteImage
 import kotlin.math.ceil
 
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
     onProductClick: (Product) -> Unit,
-    onAddToCartClick: (Product) -> Unit
+    onAddToCartClick: (Product) -> Unit,
+    onCategoryClick: (Category) -> Unit,
+    onSearch: (String) -> Unit
 ) {
     val banners by viewModel.banners.collectAsState()
     val categories by viewModel.categories.collectAsState()
@@ -88,7 +91,13 @@ fun HomeScreen(
             .verticalScroll(rememberScrollState())
     ) {
         Box(modifier = Modifier.background(MediMartBg).padding(top = 8.dp)) {
-            SearchBar(query = searchQuery, onQueryChange = { searchQuery = it })
+            SearchBar(
+                query = searchQuery,
+                onQueryChange = { searchQuery = it },
+                onSearch = {
+                    searchQuery.trim().takeIf(String::isNotEmpty)?.let(onSearch)
+                }
+            )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -114,15 +123,19 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(categories) { category ->
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    RemoteImage(
-                        imageUrl = category.icon,
+                Column(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(16.dp))
+                        .clickable { onCategoryClick(category) }
+                        .padding(vertical = 4.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    CategoryIcon(
+                        categoryName = category.name,
                         contentDescription = category.name,
-                        contentScale = androidx.compose.ui.layout.ContentScale.Inside,
                         modifier = Modifier
                             .size(56.dp)
-                            .clip(RoundedCornerShape(16.dp)),
-                        fallbackColor = MediMartOrangeSoft
+                            .clip(RoundedCornerShape(16.dp))
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(

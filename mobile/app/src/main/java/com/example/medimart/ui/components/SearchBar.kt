@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -22,6 +23,7 @@ import com.example.medimart.theme.MediMartTextSecondary
 fun SearchBar(
     query: String,
     onQueryChange: (String) -> Unit,
+    onSearch: () -> Unit = {},
     modifier: Modifier = Modifier,
     placeholder: String = "Tìm kiếm sản phẩm..."
 ) {
@@ -42,12 +44,14 @@ fun SearchBar(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = "Search",
-                tint = MediMartTextSecondary,
-                modifier = Modifier.size(24.dp)
-            )
+            IconButton(onClick = onSearch, modifier = Modifier.size(32.dp)) {
+                Icon(
+                    imageVector = Icons.Default.Search,
+                    contentDescription = "Tìm kiếm",
+                    tint = MediMartTextSecondary,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
             Spacer(modifier = Modifier.width(12.dp))
             Box(modifier = Modifier.weight(1f)) {
                 if (query.isEmpty()) {
@@ -63,6 +67,7 @@ fun SearchBar(
                     },
                     textStyle = MaterialTheme.typography.bodyMedium.copy(color = MediMartTextPrimary),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                    keyboardActions = KeyboardActions(onSearch = { onSearch() }),
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth()
                 )

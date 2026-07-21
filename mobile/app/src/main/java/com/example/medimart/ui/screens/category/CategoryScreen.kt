@@ -17,20 +17,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.medimart.data.model.Category
 import com.example.medimart.theme.MediMartBg
-import com.example.medimart.theme.MediMartOrangeSoft
-import com.example.medimart.ui.components.RemoteImage
+import com.example.medimart.ui.components.CategoryIcon
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CategoryScreen(viewModel: CategoryViewModel, onCategoryClick: (String) -> Unit) {
+fun CategoryScreen(viewModel: CategoryViewModel, onCategoryClick: (Category) -> Unit) {
     val categories by viewModel.categories.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
     Column(modifier = Modifier.fillMaxSize().background(MediMartBg)) {
         CenterAlignedTopAppBar(
             title = { Text("Danh mục sản phẩm", fontWeight = FontWeight.Bold) },
-            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
         )
         
         if (isLoading) {
@@ -46,7 +46,7 @@ fun CategoryScreen(viewModel: CategoryViewModel, onCategoryClick: (String) -> Un
             ) {
                 items(categories) { category ->
                     Card(
-                        modifier = Modifier.fillMaxWidth().aspectRatio(0.88f).clickable { onCategoryClick(category._id) },
+                        modifier = Modifier.fillMaxWidth().aspectRatio(0.88f).clickable { onCategoryClick(category) },
                         colors = CardDefaults.cardColors(containerColor = Color.White),
                         shape = RoundedCornerShape(16.dp),
                         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
@@ -56,12 +56,10 @@ fun CategoryScreen(viewModel: CategoryViewModel, onCategoryClick: (String) -> Un
                             horizontalAlignment = Alignment.CenterHorizontally,
                             verticalArrangement = Arrangement.Center
                         ) {
-                            RemoteImage(
-                                imageUrl = category.icon,
+                            CategoryIcon(
+                                categoryName = category.name,
                                 contentDescription = category.name,
-                                contentScale = androidx.compose.ui.layout.ContentScale.Inside,
-                                modifier = Modifier.size(52.dp),
-                                fallbackColor = MediMartOrangeSoft
+                                modifier = Modifier.size(56.dp)
                             )
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(

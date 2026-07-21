@@ -3,6 +3,7 @@ package com.example.medimart.data.repository
 import com.example.medimart.data.model.CheckoutRequest
 import com.example.medimart.data.model.CheckoutResponse
 import com.example.medimart.data.model.Order
+import com.example.medimart.data.model.OrderDetail
 import com.example.medimart.data.remote.ApiService
 
 class OrderRepository(private val apiService: ApiService) {
@@ -12,5 +13,13 @@ class OrderRepository(private val apiService: ApiService) {
 
     suspend fun getMyOrders(status: String? = null): Result<List<Order>> = try {
         Result.success(apiService.getMyOrders(status))
+    } catch (e: Exception) { Result.failure(e) }
+
+    suspend fun getMyOrderById(id: String): Result<OrderDetail> = try {
+        Result.success(apiService.getMyOrderById(id))
+    } catch (e: Exception) { Result.failure(e) }
+
+    suspend fun cancelMyOrder(id: String): Result<OrderDetail> = try {
+        Result.success(apiService.cancelMyOrder(id))
     } catch (e: Exception) { Result.failure(e) }
 }

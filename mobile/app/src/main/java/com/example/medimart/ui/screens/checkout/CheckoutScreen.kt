@@ -1,22 +1,28 @@
 package com.example.medimart.ui.screens.checkout
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.example.medimart.data.model.Address
 import com.example.medimart.theme.MediMartBg
 import com.example.medimart.theme.MediMartDisabledContent
 import com.example.medimart.theme.MediMartDisabledSurface
@@ -27,22 +33,57 @@ import com.example.medimart.theme.MediMartOrange
 fun CheckoutScreen(
     viewModel: CheckoutViewModel,
     onBack: () -> Unit,
-    onCheckoutSuccess: () -> Unit
+    onCheckoutSuccess: (String) -> Unit
 ) {
     val items by viewModel.cartItems.collectAsState()
     val addresses by viewModel.addresses.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val isSavingAddress by viewModel.isSavingAddress.collectAsState()
     val error by viewModel.error.collectAsState()
-    val checkoutSuccess by viewModel.checkoutSuccess.collectAsState()
+    val addressError by viewModel.addressError.collectAsState()
+    val createdOrderId by viewModel.createdOrderId.collectAsState()
+
+    var showAddAddressDialog by rememberSaveable { mutableStateOf(false) }
+    var selectedAddressId by rememberSaveable { mutableStateOf<String?>(null) }
 
     val totalAmount = items.sumOf { it.price * it.quantity }
-    val defaultAddress = addresses.firstOrNull { it.isDefault } ?: addresses.firstOrNull()
-    val canCheckout = !isLoading && defaultAddress != null && items.isNotEmpty()
-
-    LaunchedEffect(checkoutSuccess) {
-        if (checkoutSuccess) {
-            onCheckoutSuccess()
+    LaunchedEffect(addresses) {
+        if (addresses.none { it._id == selectedAddressId }) {
+            selectedAddressId = addresses.firstOrNull { it.isDefault }?._id
+                ?: addresses.firstOrNull()?._id
         }
+    }
+
+    val selectedAddress = addresses.firstOrNull { it._id == selectedAddressId }
+        ?: addresses.firstOrNull { it.isDefault }
+        ?: addresses.firstOrNull()
+    val canCheckout = !isLoading && selectedAddress != null && items.isNotEmpty()
+
+    LaunchedEffect(createdOrderId) {
+        createdOrderId?.let { orderId ->
+            onCheckoutSuccess(orderId)
+            viewModel.consumeCreatedOrder()
+        }
+    }
+
+    if (showAddAddressDialog) {
+        AddAddressDialog(
+            isSaving = isSavingAddress,
+            error = addressError,
+            forceDefault = addresses.isEmpty(),
+            onDismiss = {
+                if (!isSavingAddress) {
+                    viewModel.clearAddressError()
+                    showAddAddressDialog = false
+                }
+            },
+            onSave = { name, phone, address, isDefault ->
+                viewModel.addAddress(name, phone, address, isDefault) { created ->
+                    selectedAddressId = created._id
+                    showAddAddressDialog = false
+                }
+            }
+        )
     }
 
     Scaffold(
@@ -68,8 +109,8 @@ fun CheckoutScreen(
                     }
                     Button(
                         onClick = {
-                            if (defaultAddress != null) {
-                                viewModel.checkout(defaultAddress._id, "COD")
+                            if (selectedAddress != null) {
+                                viewModel.checkout(selectedAddress._id, "COD")
                             }
                         },
                         shape = RoundedCornerShape(percent = 50),
@@ -108,31 +149,63 @@ fun CheckoutScreen(
                 Spacer(modifier = Modifier.height(8.dp))
             }
             
-            Text("Địa chỉ nhận hàng", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Địa chỉ nhận hàng", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                TextButton(
+                    onClick = {
+                        viewModel.clearAddressError()
+                        showAddAddressDialog = true
+                    }
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text("Thêm địa chỉ")
+                }
+            }
             Spacer(modifier = Modifier.height(8.dp))
             Card(
                 colors = CardDefaults.cardColors(containerColor = Color.White),
                 shape = RoundedCornerShape(16.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
-                Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.LocationOn, contentDescription = null, tint = MediMartOrange)
-                    Spacer(modifier = Modifier.width(16.dp))
+                Column(modifier = Modifier.fillMaxWidth()) {
                     if (isLoading && addresses.isEmpty()) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(28.dp),
-                            color = MediMartOrange,
-                            strokeWidth = 2.dp
-                        )
-                    } else if (defaultAddress != null) {
-                        Column {
-                            Text("${defaultAddress.name} - ${defaultAddress.phone}", fontWeight = FontWeight.Bold)
-                            Text(defaultAddress.address, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(28.dp),
+                                color = MediMartOrange,
+                                strokeWidth = 2.dp
+                            )
+                        }
+                    } else if (addresses.isNotEmpty()) {
+                        addresses.forEachIndexed { index, address ->
+                            AddressOption(
+                                address = address,
+                                selected = address._id == selectedAddress?._id,
+                                onClick = { selectedAddressId = address._id }
+                            )
+                            if (index < addresses.lastIndex) {
+                                HorizontalDivider(color = Color(0xFFE5E7EB))
+                            }
                         }
                     } else {
-                        Column(modifier = Modifier.weight(1f)) {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().padding(24.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Icon(Icons.Default.LocationOn, contentDescription = null, tint = MediMartOrange)
+                            Spacer(Modifier.height(8.dp))
                             Text("Chưa có địa chỉ giao hàng", color = Color.Gray)
-                            TextButton(onClick = viewModel::loadAddresses) { Text("Tải lại") }
+                            TextButton(onClick = { showAddAddressDialog = true }) {
+                                Text("Tạo địa chỉ đầu tiên")
+                            }
                         }
                     }
                 }
@@ -173,7 +246,7 @@ fun CheckoutScreen(
                         Text("Phí vận chuyển", color = Color.Gray)
                         Text("0 đ", fontWeight = FontWeight.Bold)
                     }
-                    Divider(modifier = Modifier.padding(vertical = 12.dp))
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text("Tổng cộng", fontWeight = FontWeight.Bold)
                         Text("%,d đ".format(totalAmount), color = MediMartOrange, fontWeight = FontWeight.Bold)
@@ -182,4 +255,127 @@ fun CheckoutScreen(
             }
         }
     }
+}
+
+@Composable
+private fun AddressOption(
+    address: Address,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RadioButton(selected = selected, onClick = onClick)
+        Spacer(Modifier.width(8.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("${address.name} - ${address.phone}", fontWeight = FontWeight.Bold)
+                if (address.isDefault) {
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "Mặc định",
+                        color = MediMartOrange,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
+            }
+            Spacer(Modifier.height(4.dp))
+            Text(address.address, style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
+        }
+    }
+}
+
+@Composable
+private fun AddAddressDialog(
+    isSaving: Boolean,
+    error: String?,
+    forceDefault: Boolean,
+    onDismiss: () -> Unit,
+    onSave: (name: String, phone: String, address: String, isDefault: Boolean) -> Unit
+) {
+    var name by rememberSaveable { mutableStateOf("") }
+    var phone by rememberSaveable { mutableStateOf("") }
+    var address by rememberSaveable { mutableStateOf("") }
+    var isDefault by rememberSaveable(forceDefault) { mutableStateOf(forceDefault) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Thêm địa chỉ giao hàng", fontWeight = FontWeight.Bold) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it.take(100) },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Tên người nhận") },
+                    singleLine = true
+                )
+                OutlinedTextField(
+                    value = phone,
+                    onValueChange = { phone = it.take(20) },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Số điện thoại") },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
+                )
+                OutlinedTextField(
+                    value = address,
+                    onValueChange = { address = it.take(300) },
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("Địa chỉ chi tiết") },
+                    minLines = 3,
+                    maxLines = 5
+                )
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable(enabled = !forceDefault) { isDefault = !isDefault },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Checkbox(
+                        checked = isDefault,
+                        onCheckedChange = if (forceDefault) null else { value -> isDefault = value }
+                    )
+                    Text(
+                        if (forceDefault) "Địa chỉ đầu tiên sẽ là mặc định"
+                        else "Đặt làm địa chỉ mặc định"
+                    )
+                }
+                if (error != null) {
+                    Text(
+                        text = error,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = { onSave(name, phone, address, isDefault) },
+                enabled = !isSaving,
+                colors = ButtonDefaults.buttonColors(containerColor = MediMartOrange)
+            ) {
+                if (isSaving) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp
+                    )
+                } else {
+                    Text("Lưu địa chỉ")
+                }
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss, enabled = !isSaving) {
+                Text("Hủy")
+            }
+        }
+    )
 }

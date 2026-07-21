@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit
 object RetrofitClient {
     fun createApiService(tokenManager: TokenManager): ApiService {
         val logging = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
+            level = HttpLoggingInterceptor.Level.BASIC
         }
 
         val authInterceptor = AuthInterceptor(tokenManager)

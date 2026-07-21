@@ -1,5 +1,6 @@
 package com.example.medimart.ui.screens.auth
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -10,14 +11,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.example.medimart.R
 import com.example.medimart.theme.MediMartDisabledContent
 import com.example.medimart.theme.MediMartDisabledSurface
 import com.example.medimart.theme.MediMartOrange
-import com.example.medimart.theme.MediMartOrangeSoft
 import com.example.medimart.theme.MediMartTextPrimary
 import com.example.medimart.theme.MediMartTextSecondary
 
@@ -46,17 +48,16 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Box(
-            modifier = Modifier.size(100.dp).background(MediMartOrangeSoft, CircleShape),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                "Medi\nMart",
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Black),
-                color = MediMartOrange
-            )
-        }
-        Spacer(modifier = Modifier.height(40.dp))
+        Image(
+            painter = painterResource(R.drawable.medimart_logo),
+            contentDescription = "Logo MediMart",
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(180.dp),
+            alignment = Alignment.Center,
+            contentScale = ContentScale.Crop
+        )
+        Spacer(modifier = Modifier.height(24.dp))
         Text("Đăng nhập", style = MaterialTheme.typography.headlineMedium.copy(color = MediMartTextPrimary))
         Spacer(modifier = Modifier.height(8.dp))
         Text("Nhập email để nhận mã xác thực", color = MediMartTextSecondary, style = MaterialTheme.typography.bodyMedium)

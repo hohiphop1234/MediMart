@@ -45,17 +45,65 @@ data class Address(
     val isDefault: Boolean
 )
 
+data class AddressRequest(
+    val name: String,
+    val phone: String,
+    val address: String,
+    val isDefault: Boolean
+)
+
 data class Order(
     val _id: String,
     val totalAmount: Int,
+    val earnedPoints: Int = 0,
     val status: String,
     val paymentMethod: String,
-    val createdAt: String
+    val createdAt: String,
+    val updatedAt: String = "",
+    val itemCount: Int = 0,
+    val previewItems: List<String> = emptyList(),
+    val hasMoreItems: Boolean = false
+)
+
+data class OrderItem(
+    val _id: String,
+    val productId: String,
+    val productName: String,
+    val quantity: Int,
+    val unitPrice: Int,
+    val imageUrl: String
+)
+
+data class OrderAddress(
+    val name: String,
+    val phone: String,
+    val address: String
+)
+
+data class OrderDetail(
+    val _id: String,
+    val totalAmount: Int,
+    val earnedPoints: Int,
+    val status: String,
+    val paymentMethod: String,
+    val createdAt: String,
+    val updatedAt: String,
+    val itemCount: Int,
+    val previewItems: List<String>,
+    val hasMoreItems: Boolean,
+    val address: OrderAddress,
+    val items: List<OrderItem>
 )
 
 data class LoginRequest(val email: String)
 data class OtpRequest(val email: String, val otp: String)
-data class AuthResponse(val token: String, val user: User)
+data class RefreshRequest(val refreshToken: String)
+data class AuthResponse(
+    val token: String,
+    val refreshToken: String?,
+    val expiresAt: Long?,
+    val user: User
+)
 
 data class FlashSaleResponse(
     val products: List<Product>,
@@ -76,5 +124,6 @@ data class CheckoutRequest(
 data class CheckoutResponse(
     val orderId: String,
     val totalAmount: Int,
+    val earnedPoints: Int = 0,
     val status: String
 )

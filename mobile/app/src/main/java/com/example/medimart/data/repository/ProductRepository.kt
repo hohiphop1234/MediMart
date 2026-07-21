@@ -23,7 +23,14 @@ class ProductRepository(private val apiService: ApiService) {
         Result.success(apiService.getBestSellers())
     } catch (e: Exception) { Result.failure(e) }
 
-    suspend fun searchProducts(query: String): Result<List<Product>> = try {
-        Result.success(apiService.searchProducts(query))
+    suspend fun searchProducts(
+        query: String,
+        categoryId: String? = null
+    ): Result<List<Product>> = try {
+        Result.success(apiService.searchProducts(query, categoryId))
+    } catch (e: Exception) { Result.failure(e) }
+
+    suspend fun getProductById(id: String): Result<Product> = try {
+        Result.success(apiService.getProductById(id))
     } catch (e: Exception) { Result.failure(e) }
 }

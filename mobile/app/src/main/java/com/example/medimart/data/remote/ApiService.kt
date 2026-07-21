@@ -10,6 +10,9 @@ interface ApiService {
     @POST("auth/verify-otp")
     suspend fun verifyOtp(@Body request: OtpRequest): AuthResponse
 
+    @POST("auth/refresh")
+    suspend fun refreshSession(@Body request: RefreshRequest): AuthResponse
+
     @GET("banners")
     suspend fun getBanners(): List<Banner>
 
@@ -23,7 +26,13 @@ interface ApiService {
     suspend fun getBestSellers(): List<Product>
 
     @GET("products/search")
-    suspend fun searchProducts(@Query("q") query: String): List<Product>
+    suspend fun searchProducts(
+        @Query("q") query: String,
+        @Query("categoryId") categoryId: String? = null
+    ): List<Product>
+
+    @GET("products/{id}")
+    suspend fun getProductById(@Path("id") id: String): Product
 
     @GET("users/profile")
     suspend fun getProfile(): User
@@ -38,7 +47,7 @@ interface ApiService {
     suspend fun getAddresses(): List<Address>
 
     @POST("users/addresses")
-    suspend fun addAddress(@Body address: Address): Address
+    suspend fun addAddress(@Body request: AddressRequest): Address
 
     @DELETE("users/addresses/{id}")
     suspend fun deleteAddress(@Path("id") id: String): Map<String, Boolean>
@@ -52,6 +61,12 @@ interface ApiService {
     @POST("orders/checkout")
     suspend fun checkout(@Body request: CheckoutRequest): CheckoutResponse
 
-    @GET("orders/my-orders")
+    @GET("orders/me")
     suspend fun getMyOrders(@Query("status") status: String? = null): List<Order>
+
+    @GET("orders/me/{id}")
+    suspend fun getMyOrderById(@Path("id") id: String): OrderDetail
+
+    @PATCH("orders/me/{id}/cancel")
+    suspend fun cancelMyOrder(@Path("id") id: String): OrderDetail
 }

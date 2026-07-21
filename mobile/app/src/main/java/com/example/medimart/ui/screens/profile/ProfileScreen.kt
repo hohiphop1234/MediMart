@@ -1,11 +1,14 @@
 package com.example.medimart.ui.screens.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.LocalShipping
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Receipt
@@ -22,7 +25,11 @@ import com.example.medimart.theme.MediMartBg
 import com.example.medimart.theme.MediMartOrange
 
 @Composable
-fun ProfileScreen(viewModel: ProfileViewModel, onLogout: () -> Unit) {
+fun ProfileScreen(
+    viewModel: ProfileViewModel,
+    onOrdersClick: () -> Unit,
+    onLogout: () -> Unit
+) {
     val user by viewModel.user.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
@@ -81,13 +88,30 @@ fun ProfileScreen(viewModel: ProfileViewModel, onLogout: () -> Unit) {
         }
 
         Card(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .clickable(onClick = onOrdersClick),
             colors = CardDefaults.cardColors(containerColor = Color.White),
             shape = RoundedCornerShape(16.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Đơn hàng của tôi", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Đơn hàng của tôi", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("Xem tất cả", color = MediMartOrange, style = MaterialTheme.typography.labelLarge)
+                        Icon(
+                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            contentDescription = null,
+                            tint = MediMartOrange
+                        )
+                    }
+                }
                 Spacer(modifier = Modifier.height(16.dp))
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -97,6 +121,10 @@ fun ProfileScreen(viewModel: ProfileViewModel, onLogout: () -> Unit) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(Icons.Default.LocalShipping, contentDescription = null, tint = MediMartOrange)
                         Text("Đang giao", style = MaterialTheme.typography.bodySmall)
+                    }
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(Icons.Default.CheckCircle, contentDescription = null, tint = MediMartOrange)
+                        Text("Đã giao", style = MaterialTheme.typography.bodySmall)
                     }
                 }
             }
@@ -110,7 +138,7 @@ fun ProfileScreen(viewModel: ProfileViewModel, onLogout: () -> Unit) {
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).height(50.dp),
             elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
         ) {
-            Icon(Icons.Default.ExitToApp, contentDescription = null)
+            Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
             Text("Đăng xuất", fontWeight = FontWeight.Bold)
         }

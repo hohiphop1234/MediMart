@@ -1,14 +1,20 @@
 package com.example.medimart.ui.navigation
 
 import android.net.Uri
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -33,6 +39,14 @@ import com.example.medimart.ui.screens.profile.ProfileScreen
 import com.example.medimart.ui.screens.profile.ProfileViewModel
 import com.example.medimart.ui.screens.checkout.CheckoutScreen
 import com.example.medimart.ui.screens.checkout.CheckoutViewModel
+import com.example.medimart.ui.screens.orders.OrderDetailScreen
+import com.example.medimart.ui.screens.orders.OrdersScreen
+import com.example.medimart.ui.screens.orders.OrdersViewModel
+import com.example.medimart.ui.screens.product.ProductDetailScreen
+import com.example.medimart.ui.screens.product.ProductDetailViewModel
+import com.example.medimart.ui.screens.products.ProductListScreen
+import com.example.medimart.ui.screens.products.ProductListViewModel
+import com.example.medimart.theme.MediMartOrange
 import kotlinx.coroutines.launch
 
 @Composable
@@ -43,9 +57,21 @@ fun AppNavigation(
     userRepository: UserRepository,
     orderRepository: OrderRepository
 ) {
+    var initialDestination by remember { mutableStateOf<String?>(null) }
+    LaunchedEffect(authRepository) {
+        initialDestination = if (authRepository.restoreSession()) "home" else "login"
+    }
+
+    if (initialDestination == null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator(color = MediMartOrange)
+        }
+        return
+    }
+
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route ?: "login"
+    val currentRoute = navBackStackEntry?.destination?.route ?: initialDestination!!
     val scope = rememberCoroutineScope()
 
     val authViewModel = remember { AuthViewModel(authRepository) }
@@ -54,6 +80,8 @@ fun AppNavigation(
     val categoryViewModel = remember { CategoryViewModel(productRepository) }
     val profileViewModel = remember { ProfileViewModel(userRepository) }
     val checkoutViewModel = remember { CheckoutViewModel(cartRepository, orderRepository, userRepository) }
+    val ordersViewModel = remember { OrdersViewModel(orderRepository) }
+    val productDetailViewModel = remember { ProductDetailViewModel(productRepository) }
 
     LaunchedEffect(currentRoute) {
         when (currentRoute) {
@@ -86,7 +114,7 @@ fun AppNavigation(
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = "login",
+            startDestination = initialDestination!!,
             modifier = Modifier.padding(innerPadding)
         ) {
             composable("login") {
@@ -112,7 +140,98 @@ fun AppNavigation(
             composable("home") {
                 HomeScreen(
                     viewModel = homeViewModel,
-                    onProductClick = { /* TODO */ },
+                    onProductClick = { product ->
+                        navController.navigate("product/${Uri.encode(product._id)}")
+                    },
+                    onAddToCartClick = { product ->
+                        cartViewModel.addToCart(
+                            com.example.medimart.data.local.CartEntity(
+                                productId = product._id,
+                                name = product.name,
+                                price = product.salePrice ?: product.price,
+                                imageUrl = product.imageUrl,
+                                quantity = 1
+                            )
+                        )
+                    },
+                    onCategoryClick = { category ->
+                        navController.navigate(
+                            "products/category/${Uri.encode(category._id)}/${Uri.encode(category.name)}"
+                        )
+                    },
+                    onSearch = { query ->
+                        navController.navigate("products/search/${Uri.encode(query)}")
+                    }
+                )
+            }
+
+            composable("product/{productId}") { backStackEntry ->
+                val productId = backStackEntry.arguments?.getString("productId") ?: ""
+                ProductDetailScreen(
+                    productId = productId,
+                    viewModel = productDetailViewModel,
+                    onBack = { navController.popBackStack() },
+                    onAddToCart = { product ->
+                        cartViewModel.addToCart(
+                            com.example.medimart.data.local.CartEntity(
+                                productId = product._id,
+                                name = product.name,
+                                price = product.salePrice ?: product.price,
+                                imageUrl = product.imageUrl,
+                                quantity = 1
+                            )
+                        )
+                    }
+                )
+            }
+
+            composable("products/category/{categoryId}/{categoryName}") { backStackEntry ->
+                val categoryId = Uri.decode(
+                    backStackEntry.arguments?.getString("categoryId").orEmpty()
+                )
+                val categoryName = Uri.decode(
+                    backStackEntry.arguments?.getString("categoryName").orEmpty()
+                )
+                val productListViewModel = remember(backStackEntry) {
+                    ProductListViewModel(productRepository)
+                }
+                ProductListScreen(
+                    title = categoryName.ifBlank { "Sản phẩm theo danh mục" },
+                    initialQuery = "",
+                    categoryId = categoryId,
+                    viewModel = productListViewModel,
+                    onBack = { navController.popBackStack() },
+                    onProductClick = { product ->
+                        navController.navigate("product/${Uri.encode(product._id)}")
+                    },
+                    onAddToCartClick = { product ->
+                        cartViewModel.addToCart(
+                            com.example.medimart.data.local.CartEntity(
+                                productId = product._id,
+                                name = product.name,
+                                price = product.salePrice ?: product.price,
+                                imageUrl = product.imageUrl,
+                                quantity = 1
+                            )
+                        )
+                    }
+                )
+            }
+
+            composable("products/search/{query}") { backStackEntry ->
+                val query = Uri.decode(backStackEntry.arguments?.getString("query").orEmpty())
+                val productListViewModel = remember(backStackEntry) {
+                    ProductListViewModel(productRepository)
+                }
+                ProductListScreen(
+                    title = "Kết quả tìm kiếm",
+                    initialQuery = query,
+                    categoryId = null,
+                    viewModel = productListViewModel,
+                    onBack = { navController.popBackStack() },
+                    onProductClick = { product ->
+                        navController.navigate("product/${Uri.encode(product._id)}")
+                    },
                     onAddToCartClick = { product ->
                         cartViewModel.addToCart(
                             com.example.medimart.data.local.CartEntity(
@@ -130,7 +249,11 @@ fun AppNavigation(
             composable("category") {
                 CategoryScreen(
                     viewModel = categoryViewModel,
-                    onCategoryClick = { /* TODO */ }
+                    onCategoryClick = { category ->
+                        navController.navigate(
+                            "products/category/${Uri.encode(category._id)}/${Uri.encode(category.name)}"
+                        )
+                    }
                 )
             }
             
@@ -146,17 +269,38 @@ fun AppNavigation(
                 CheckoutScreen(
                     viewModel = checkoutViewModel,
                     onBack = { navController.popBackStack() },
-                    onCheckoutSuccess = {
-                        navController.navigate("home") {
-                            popUpTo("home") { inclusive = false }
+                    onCheckoutSuccess = { orderId ->
+                        navController.navigate("order/${Uri.encode(orderId)}") {
+                            popUpTo("cart") { inclusive = true }
+                            launchSingleTop = true
                         }
                     }
+                )
+            }
+
+            composable("orders") {
+                OrdersScreen(
+                    viewModel = ordersViewModel,
+                    onBack = { navController.popBackStack() },
+                    onOrderClick = { orderId ->
+                        navController.navigate("order/${Uri.encode(orderId)}")
+                    }
+                )
+            }
+
+            composable("order/{orderId}") { backStackEntry ->
+                val orderId = Uri.decode(backStackEntry.arguments?.getString("orderId").orEmpty())
+                OrderDetailScreen(
+                    orderId = orderId,
+                    viewModel = ordersViewModel,
+                    onBack = { navController.popBackStack() }
                 )
             }
             
             composable("profile") {
                 ProfileScreen(
                     viewModel = profileViewModel,
+                    onOrdersClick = { navController.navigate("orders") },
                     onLogout = {
                         scope.launch {
                             authRepository.logout()
