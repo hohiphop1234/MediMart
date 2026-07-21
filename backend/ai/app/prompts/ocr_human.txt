@@ -1,2 +1,2 @@
-Văn bản OCR:
+OCR Text:
 {ocr_text}

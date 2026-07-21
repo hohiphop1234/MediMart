@@ -7,6 +7,14 @@ let orders = [];
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
+    // Configure marked options for line breaks
+    if (window.marked) {
+        marked.use({
+            breaks: true,
+            gfm: true
+        });
+    }
+
     initNavigation();
     initTheme();
     loadDashboardData();
@@ -14,6 +22,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Form Submissions
     document.getElementById('product-form').addEventListener('submit', handleProductSubmit);
     document.getElementById('category-form').addEventListener('submit', handleCategorySubmit);
+    
+    // Initialize AI Feature components
+    loadSavedToken();
+    initOCRUploadZone();
 });
 
 // --- Navigation ---
@@ -111,20 +123,27 @@ function renderProductsTable() {
     tbody.innerHTML = '';
 
     products.forEach(p => {
+        const id = p._id || p.id;
+        const img = p.imagePath || p.image_path || p.imageUrl || 'https://via.placeholder.com/48';
+        const categoryName = p.Category?.name || p.categories?.name || '-';
+        const price = Number(p.price || 0).toLocaleString();
+        const isFlashSale = p.isFlashSale || p.is_flash_sale;
+        const isBestSeller = p.isBestSeller || p.is_best_seller;
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td><img src="${p.imagePath || 'https://via.placeholder.com/48'}" alt="Image"></td>
+            <td><img src="${img}" alt="Image"></td>
             <td><strong>${p.name}</strong></td>
-            <td>${p.Category?.name || '-'}</td>
-            <td>${p.price.toLocaleString()} ₫</td>
+            <td>${categoryName}</td>
+            <td>${price} ₫</td>
             <td>
-                ${p.isFlashSale ? '<span class="status-badge status-shipping">Flash Sale</span>' : ''}
-                ${p.isBestSeller ? '<span class="status-badge status-delivered">Best Seller</span>' : ''}
+                ${isFlashSale ? '<span class="status-badge status-shipping">Flash Sale</span>' : ''}
+                ${isBestSeller ? '<span class="status-badge status-delivered">Best Seller</span>' : ''}
             </td>
             <td>
                 <div class="action-btns">
-                    <button class="btn-icon btn-edit" onclick="editProduct('${p._id}')"><i class="fa-solid fa-pen"></i></button>
-                    <button class="btn-icon btn-delete" onclick="deleteProduct('${p._id}')"><i class="fa-solid fa-trash"></i></button>
+                    <button class="btn-icon btn-edit" onclick="editProduct('${id}')"><i class="fa-solid fa-pen"></i></button>
+                    <button class="btn-icon btn-delete" onclick="deleteProduct('${id}')"><i class="fa-solid fa-trash"></i></button>
                 </div>
             </td>
         `;
@@ -148,15 +167,16 @@ function renderCategoriesTable() {
     tbody.innerHTML = '';
 
     categories.forEach(c => {
+        const id = c._id || c.id;
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td><img src="${c.icon || 'https://via.placeholder.com/48'}" alt="Icon"></td>
             <td><strong>${c.name}</strong></td>
-            <td>${c.productCount || 0}</td>
+            <td>${c.productCount || c.product_count || 0}</td>
             <td>
                 <div class="action-btns">
-                    <button class="btn-icon btn-edit" onclick="editCategory('${c._id}')"><i class="fa-solid fa-pen"></i></button>
-                    <button class="btn-icon btn-delete" onclick="deleteCategory('${c._id}')"><i class="fa-solid fa-trash"></i></button>
+                    <button class="btn-icon btn-edit" onclick="editCategory('${id}')"><i class="fa-solid fa-pen"></i></button>
+                    <button class="btn-icon btn-delete" onclick="deleteCategory('${id}')"><i class="fa-solid fa-trash"></i></button>
                 </div>
             </td>
         `;
@@ -180,19 +200,25 @@ function renderOrdersTable() {
     tbody.innerHTML = '';
 
     orders.forEach(o => {
-        const date = new Date(o.createdAt).toLocaleDateString();
+        const id = o._id || o.id;
+        const date = new Date(o.createdAt || o.created_at).toLocaleDateString();
+        const userDisplay = o.User?.email || o.users?.phone || o.users?.id || o.user_id || 'Unknown';
+        const total = Number(o.totalAmount || o.total_amount || 0).toLocaleString();
+        const payment = o.paymentMethod || o.payment_method || 'COD';
+        const status = o.status || 'PENDING';
+
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td><strong>#${o._id.substring(0, 8)}</strong><br><small>${date}</small></td>
-            <td>${o.User?.email || o.User?.id || 'Unknown'}</td>
-            <td><strong>${o.totalAmount.toLocaleString()} ₫</strong></td>
-            <td>${o.paymentMethod}</td>
+            <td><strong>#${id.substring(0, 8)}</strong><br><small>${date}</small></td>
+            <td>${userDisplay}</td>
+            <td><strong>${total} ₫</strong></td>
+            <td>${payment}</td>
             <td>
-                <select class="status-select status-${o.status.toLowerCase()}" onchange="updateOrderStatus('${o._id}', this.value)">
-                    <option value="PENDING" ${o.status === 'PENDING' ? 'selected' : ''}>PENDING</option>
-                    <option value="SHIPPING" ${o.status === 'SHIPPING' ? 'selected' : ''}>SHIPPING</option>
-                    <option value="DELIVERED" ${o.status === 'DELIVERED' ? 'selected' : ''}>DELIVERED</option>
-                    <option value="CANCELLED" ${o.status === 'CANCELLED' ? 'selected' : ''}>CANCELLED</option>
+                <select class="status-select status-${status.toLowerCase()}" onchange="updateOrderStatus('${id}', this.value)">
+                    <option value="PENDING" ${status === 'PENDING' ? 'selected' : ''}>PENDING</option>
+                    <option value="SHIPPING" ${status === 'SHIPPING' ? 'selected' : ''}>SHIPPING</option>
+                    <option value="DELIVERED" ${status === 'DELIVERED' ? 'selected' : ''}>DELIVERED</option>
+                    <option value="CANCELLED" ${status === 'CANCELLED' ? 'selected' : ''}>CANCELLED</option>
                 </select>
             </td>
             <td>
@@ -232,8 +258,9 @@ function populateCategorySelect() {
     const select = document.getElementById('product-category');
     select.innerHTML = '<option value="">Select Category</option>';
     categories.forEach(c => {
+        const id = c._id || c.id;
         const opt = document.createElement('option');
-        opt.value = c._id;
+        opt.value = id;
         opt.textContent = c.name;
         select.appendChild(opt);
     });
@@ -248,14 +275,14 @@ function openProductModal() {
 }
 
 function editProduct(id) {
-    const p = products.find(x => x._id === id);
+    const p = products.find(x => (x._id || x.id) === id);
     if (!p) return;
 
-    document.getElementById('product-id').value = p._id;
-    document.getElementById('product-name').value = p.name;
-    document.getElementById('product-category').value = p.categoryId || '';
-    document.getElementById('product-price').value = p.price;
-    document.getElementById('product-image').value = p.imagePath || '';
+    document.getElementById('product-id').value = p._id || p.id;
+    document.getElementById('product-name').value = p.name || '';
+    document.getElementById('product-category').value = p.categoryId || p.category_id || '';
+    document.getElementById('product-price').value = p.price || 0;
+    document.getElementById('product-image').value = p.imagePath || p.image_path || p.imageUrl || '';
     document.getElementById('product-unit').value = p.unit || '';
     document.getElementById('product-desc').value = p.description || '';
     
@@ -369,4 +396,341 @@ async function deleteCategory(id) {
     } catch (error) {
         console.error('Error:', error);
     }
+}
+
+// --- AI Features ---
+
+// Auth Token management
+function getAuthHeaders() {
+    const token = localStorage.getItem('supabase_auth_token');
+    const headers = {};
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
+    return headers;
+}
+
+function saveAuthToken() {
+    const token = document.getElementById('auth-token-input').value.trim();
+    const status = document.getElementById('token-status');
+    if (!token) {
+        status.textContent = 'Please enter a token first.';
+        status.className = 'token-status-msg error';
+        return;
+    }
+    localStorage.setItem('supabase_auth_token', token);
+    status.textContent = 'Token saved successfully!';
+    status.className = 'token-status-msg success';
+}
+
+function clearAuthToken() {
+    localStorage.removeItem('supabase_auth_token');
+    document.getElementById('auth-token-input').value = '';
+    const status = document.getElementById('token-status');
+    status.textContent = 'Token cleared.';
+    status.className = 'token-status-msg error';
+}
+
+function loadSavedToken() {
+    const token = localStorage.getItem('supabase_auth_token');
+    const status = document.getElementById('token-status');
+    if (token) {
+        document.getElementById('auth-token-input').value = token;
+        status.textContent = 'Saved token loaded.';
+        status.className = 'token-status-msg success';
+    }
+}
+
+// Chatbot functionality
+async function sendChatMessage() {
+    const input = document.getElementById('chat-user-input');
+    const messageText = input.value.trim();
+    if (!messageText) return;
+
+    // Clear input
+    input.value = '';
+
+    // Append user message
+    appendChatMessage('user', messageText);
+
+    // Append loading message
+    const loadingId = appendChatMessage('assistant', 'Thinking...', true);
+
+    try {
+        const headers = getAuthHeaders();
+
+        const res = await fetch(`${API_BASE}/chat`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                ...headers
+            },
+            body: JSON.stringify({ message: messageText, stream: true })
+        });
+
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            const errMsg = errData.error || `HTTP ${res.status}`;
+            updateChatMessageContent(loadingId, `Error calling API: ${errMsg}`);
+            return;
+        }
+
+        // Clear the "Thinking..." loader content
+        const el = document.getElementById(loadingId);
+        if (el) {
+            const contentDiv = el.querySelector('.message-content');
+            if (contentDiv) contentDiv.innerHTML = '';
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let fullReply = '';
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            const chunkText = decoder.decode(value);
+            const lines = chunkText.split('\n');
+            for (const line of lines) {
+                const cleanLine = line.trim();
+                if (!cleanLine) continue;
+                if (cleanLine.startsWith('data: ')) {
+                    const dataStr = cleanLine.substring(6).trim();
+                    if (dataStr === '[DONE]') {
+                        break;
+                    }
+                    try {
+                        const parsed = JSON.parse(dataStr);
+                        const content = parsed.choices?.[0]?.delta?.content || '';
+                        if (content) {
+                            fullReply += content;
+                            updateChatMessageContent(loadingId, fullReply);
+                        }
+                    } catch (e) {
+                        // Suppress parse errors for partial chunks
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Chat error:', error);
+        updateChatMessageContent(loadingId, `Network error: ${error.message}`);
+    }
+}
+
+function appendChatMessage(role, content, isLoading = false) {
+    const container = document.getElementById('chat-messages-container');
+    const msgId = 'msg-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+    
+    const div = document.createElement('div');
+    div.className = `message ${role}-message`;
+    div.id = msgId;
+    
+    if (isLoading) {
+        div.innerHTML = `<div class="message-content"><i class="fa-solid fa-spinner fa-spin"></i> <span>${content}</span></div>`;
+    } else {
+        const formatted = (role === 'assistant' && window.marked) ? marked.parse(content) : `<pre>${escapeHTML(content)}</pre>`;
+        div.innerHTML = `<div class="message-content">${formatted}</div>`;
+    }
+    
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+    return msgId;
+}
+
+function updateChatMessageContent(msgId, content) {
+    const el = document.getElementById(msgId);
+    if (el) {
+        const contentDiv = el.querySelector('.message-content');
+        if (contentDiv) {
+            const formatted = window.marked ? marked.parse(content) : `<pre>${escapeHTML(content)}</pre>`;
+            contentDiv.innerHTML = formatted;
+        }
+        const container = document.getElementById('chat-messages-container');
+        container.scrollTop = container.scrollHeight;
+    }
+}
+
+function escapeHTML(text) {
+    return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+// OCR functionality
+let selectedOCRFile = null;
+
+function initOCRUploadZone() {
+    const zone = document.getElementById('ocr-upload-zone');
+    const fileInput = document.getElementById('ocr-file-input');
+
+    if (!zone || !fileInput) return;
+
+    zone.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleOCRFileSelect(e.target.files[0]);
+        }
+    });
+
+    zone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        zone.classList.add('dragover');
+    });
+
+    zone.addEventListener('dragleave', () => {
+        zone.classList.remove('dragover');
+    });
+
+    zone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        zone.classList.remove('dragover');
+        if (e.dataTransfer.files.length > 0) {
+            handleOCRFileSelect(e.dataTransfer.files[0]);
+        }
+    });
+}
+
+function handleOCRFileSelect(file) {
+    if (!file.type.startsWith('image/')) {
+        alert('Please upload an image file (PNG/JPEG).');
+        return;
+    }
+    selectedOCRFile = file;
+
+    // Show preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        document.getElementById('ocr-image-preview').src = e.target.result;
+        document.getElementById('ocr-upload-zone').classList.add('hidden');
+        document.getElementById('ocr-preview-area').classList.remove('hidden');
+        document.getElementById('btn-run-ocr').disabled = false;
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeOCRImage() {
+    selectedOCRFile = null;
+    document.getElementById('ocr-file-input').value = '';
+    document.getElementById('ocr-image-preview').src = '';
+    document.getElementById('ocr-upload-zone').classList.remove('hidden');
+    document.getElementById('ocr-preview-area').classList.add('hidden');
+    document.getElementById('btn-run-ocr').disabled = true;
+    document.getElementById('ocr-results-area').classList.add('hidden');
+}
+
+async function runOCR() {
+    if (!selectedOCRFile) return;
+
+    const btn = document.getElementById('btn-run-ocr');
+    const origHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
+
+    // Reset results area
+    document.getElementById('ocr-results-area').classList.add('hidden');
+    const tbody = document.getElementById('ocr-medicines-tbody');
+    tbody.innerHTML = '';
+    document.getElementById('ocr-notes-text').textContent = '-';
+    document.getElementById('ocr-raw-pre').textContent = '';
+
+    const formData = new FormData();
+    formData.append('image', selectedOCRFile);
+
+    try {
+        const headers = getAuthHeaders();
+
+        const res = await fetch(`${API_BASE}/ocr`, {
+            method: 'POST',
+            headers: {
+                ...headers
+            },
+            body: formData
+        });
+
+        if (!res.ok) {
+            const errData = await res.json().catch(() => ({}));
+            const errMsg = errData.error || `HTTP ${res.status}`;
+            alert(`OCR Parsing Failed: ${errMsg}`);
+            btn.disabled = false;
+            btn.innerHTML = origHtml;
+            return;
+        }
+
+        const data = await res.json();
+        renderOCRResults(data);
+    } catch (error) {
+        console.error('OCR API error:', error);
+        alert(`Network Error: ${error.message}`);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+    }
+}
+
+function renderOCRResults(data) {
+    document.getElementById('ocr-results-area').classList.remove('hidden');
+
+    // Render raw OCR text
+    document.getElementById('ocr-raw-pre').textContent = data.raw_text || 'No raw text extracted.';
+
+    // Render structured medicine list
+    const tbody = document.getElementById('ocr-medicines-tbody');
+    tbody.innerHTML = '';
+
+    const medicines = data.data?.medicines || [];
+    if (medicines.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="2" style="text-align: center; color: var(--text-muted);">No structured medicines found. Check Raw Text tab.</td></tr>';
+    } else {
+        medicines.forEach(m => {
+            const tr = document.createElement('tr');
+            
+            // Build matches HTML
+            let matchesHtml = '<div class="ocr-match-list">';
+            const matches = m.matches || [];
+            if (matches.length === 0) {
+                matchesHtml += `<span style="color: var(--text-muted); font-style: italic;">No matching products found in database</span>`;
+            } else {
+                matches.forEach(match => {
+                    const img = match.imagePath || 'https://via.placeholder.com/36';
+                    const price = Number(match.price).toLocaleString();
+                    const simPercent = Math.round(match.similarity * 100);
+                    matchesHtml += `
+                        <div class="ocr-match-item">
+                            <img src="${img}" class="ocr-match-img" onerror="this.src='https://via.placeholder.com/36'">
+                            <div class="ocr-match-details">
+                                <span class="ocr-match-name"><strong>${escapeHTML(match.name)}</strong> (${escapeHTML(match.unit || 'Đơn vị')})</span>
+                                <span class="ocr-match-price">${price} ₫</span>
+                            </div>
+                            <span class="status-badge status-delivered ocr-match-badge">${simPercent}% Match</span>
+                        </div>
+                    `;
+                });
+            }
+            matchesHtml += '</div>';
+
+            tr.innerHTML = `
+                <td style="vertical-align: top; width: 40%;"><strong>${escapeHTML(m.product_name)}</strong></td>
+                <td>${matchesHtml}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    // Render notes
+    document.getElementById('ocr-notes-text').textContent = data.data?.notes || 'No extra notes parsed.';
+}
+
+function switchOCRTab(event, tabId) {
+    const panel = event.target.closest('.ocr-panel');
+    panel.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    panel.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+    event.target.classList.add('active');
+    document.getElementById(tabId).classList.add('active');
 }

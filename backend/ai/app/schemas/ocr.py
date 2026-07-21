@@ -5,7 +5,6 @@ from typing import List, Optional
 
 class ProductExtraction(BaseModel):
     product_name: str = Field(description="Name of the medicine or product")
-    quantity: str = Field(description="Quantity or dosage instructions")
 
 class PrescriptionData(BaseModel):
     medicines: List[ProductExtraction] = Field(description="List of extracted medicines")

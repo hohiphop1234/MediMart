@@ -114,10 +114,9 @@ def llm_parsing_node(state: OCRState) -> dict:
         # Validate data matches PrescriptionData schema structure
         validated_medicines = []
         for med in data.get("medicines", []):
-            if "product_name" in med and "quantity" in med:
+            if "product_name" in med:
                 validated_medicines.append({
-                    "product_name": str(med["product_name"]),
-                    "quantity": str(med["quantity"])
+                    "product_name": str(med["product_name"])
                 })
         
         structured_data = {
