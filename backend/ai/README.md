@@ -35,7 +35,7 @@ backend/ai/
 │   ├── utils/
 │   │   └── image_processing.py # Các hàm tiền xử lý ảnh (xoay, cắt, chỉnh kích thước)
 │   └── main.py              # File khởi chạy ứng dụng FastAPI chính
-├── llama-b9850-bin-win-vulkan-x64/ # Thư mục chứa file thực thi llama-server.exe
+├── llama-b10069-bin-win-vulkan-x64/ # Thư mục chứa tệp thực thi llama-server.exe
 ├── models/                  # Nơi đặt tệp trọng số GGUF (qwen3-4b.medical-consultant.Q4_K_M.gguf)
 ├── pyproject.toml           # Định nghĩa dependencies (sử dụng uv làm quản lý package)
 ├── main.py                  # Entrypoint chính của backend
