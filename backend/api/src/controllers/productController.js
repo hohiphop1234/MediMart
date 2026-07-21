@@ -35,7 +35,18 @@ exports.getBestSellers = async (req, res) => {
 exports.searchProducts = async (req, res) => {
     try {
         const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
-        const products = await productService.searchProducts(q);
+        const categoryId = typeof req.query.categoryId === 'string'
+            ? req.query.categoryId.trim()
+            : '';
+
+        if (q.length > 100) {
+            return res.status(400).json({ error: 'Search query must be 100 characters or fewer' });
+        }
+        if (categoryId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(categoryId)) {
+            return res.status(400).json({ error: 'Invalid category id' });
+        }
+
+        const products = await productService.searchProducts(q, categoryId);
         res.json(products.map(serializeProduct));
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -57,7 +68,7 @@ exports.getProductById = async (req, res) => {
     try {
         const product = await productService.getProductById(req.params.id);
         if (!product) return res.status(404).json({ error: 'Product not found' });
-        res.json(product);
+        res.json(serializeProduct(product));
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

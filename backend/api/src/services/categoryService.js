@@ -3,7 +3,12 @@ const prisma = require('../config/prisma');
 class CategoryService {
     async getAllCategories() {
         return await prisma.categories.findMany({
-            orderBy: { name: 'asc' }
+            orderBy: { name: 'asc' },
+            include: {
+                _count: {
+                    select: { products: true }
+                }
+            }
         });
     }
 

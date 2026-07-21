@@ -1,8 +1,12 @@
 const { getSupabaseAdmin } = require('../config/supabase');
 
 function publicImageUrl(bucket, path) {
-    if (!path) return null;
-    return getSupabaseAdmin().storage.from(bucket).getPublicUrl(path).data.publicUrl;
+    if (typeof path !== 'string' || !path.trim()) return null;
+
+    const normalizedPath = path.trim();
+    if (/^https?:\/\//i.test(normalizedPath)) return normalizedPath;
+
+    return getSupabaseAdmin().storage.from(bucket).getPublicUrl(normalizedPath).data.publicUrl;
 }
 
 function serializeProduct(product) {
@@ -30,7 +34,7 @@ function serializeCategory(category) {
         _id: category.id,
         name: category.name,
         icon: category.icon || '',
-        productCount: category.product_count
+        productCount: category._count?.products ?? category.product_count
     };
 }
 

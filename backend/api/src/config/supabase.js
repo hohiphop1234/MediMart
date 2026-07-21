@@ -45,4 +45,18 @@ function getSupabaseUserClient(accessToken) {
     );
 }
 
-module.exports = { getSupabaseAdmin, getSupabaseUserClient };
+function getSupabasePublicClient() {
+    return createClient(
+        getRequiredEnv('SUPABASE_URL'),
+        getRequiredEnv('SUPABASE_PUBLISHABLE_KEY'),
+        {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false,
+                detectSessionInUrl: false
+            }
+        }
+    );
+}
+
+module.exports = { getSupabaseAdmin, getSupabasePublicClient, getSupabaseUserClient };

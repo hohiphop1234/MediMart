@@ -17,20 +17,29 @@ class ProductService {
         return products;
     }
 
-    async searchProducts(q) {
-        if (!q) {
-            return await prisma.products.findMany({
-                orderBy: { created_at: 'desc' }
-            });
+    async searchProducts(q, categoryId = '') {
+        const where = {};
+
+        if (categoryId) {
+            where.category_id = categoryId;
         }
+
+        if (q) {
+            where.OR = [
+                { name: { contains: q, mode: 'insensitive' } },
+                { brand: { contains: q, mode: 'insensitive' } },
+                { description: { contains: q, mode: 'insensitive' } },
+                { country: { contains: q, mode: 'insensitive' } }
+            ];
+        }
+
         return await prisma.products.findMany({
-            where: {
-                name: {
-                    contains: q,
-                    mode: 'insensitive' // Requires postgresql
-                }
-            },
-            orderBy: { created_at: 'desc' }
+            where,
+            orderBy: [
+                { is_best_seller: 'desc' },
+                { created_at: 'desc' }
+            ],
+            take: 100
         });
     }
 

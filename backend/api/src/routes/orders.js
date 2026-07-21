@@ -6,6 +6,8 @@ const auth = require('../middlewares/auth');
 // User endpoints
 router.post('/checkout', auth, orderController.checkout);
 router.get('/me', auth, orderController.getMyOrders);
+router.patch('/me/:id/cancel', auth, orderController.cancelMyOrder);
+router.get('/me/:id', auth, orderController.getMyOrderById);
 
 // Admin endpoints
 router.get('/', orderController.getAllOrders);
