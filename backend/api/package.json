@@ -6,7 +6,10 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "seed": "node seed/seed.js"
+    "prisma:generate": "prisma generate",
+    "postinstall": "prisma generate",
+    "seed": "node seed/seed.js",
+    "crawl:longchau": "node seed/crawl_longchau.js"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
@@ -24,5 +27,8 @@
   "devDependencies": {
     "nodemon": "^3.0.3",
     "prisma": "^7.8.0"
-  }
+  },
+  "trustedDependencies": [
+    "protobufjs"
+  ]
 }
