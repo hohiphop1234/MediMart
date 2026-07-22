@@ -5,9 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.medimart.data.model.ChatMessage
 import com.example.medimart.data.model.ChatRequest
 import com.example.medimart.data.remote.ApiService
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import java.util.UUID
 
 class ChatViewModel(private val apiService: ApiService) : ViewModel() {
@@ -41,29 +44,111 @@ class ChatViewModel(private val apiService: ApiService) : ViewModel() {
             text = text,
             isUser = true
         )
-        
-        _messages.value = _messages.value + userMessage
+
+        val botMessageId = UUID.randomUUID().toString()
+        val initialBotMessage = ChatMessage(
+            id = botMessageId,
+            text = "",
+            isUser = false
+        )
+
+        _messages.value = _messages.value + userMessage + initialBotMessage
         _isLoading.value = true
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.IO) {
             try {
-                val response = apiService.chat(ChatRequest(message = text))
-                val botMessage = ChatMessage(
-                    id = UUID.randomUUID().toString(),
-                    text = response.reply,
-                    isUser = false
-                )
-                _messages.value = _messages.value + botMessage
+                val responseBody = apiService.streamChat(ChatRequest(message = text, stream = true))
+                val reader = responseBody.byteStream().bufferedReader()
+                var line: String?
+
+                var accumulatedText = ""
+                var isFirstChunk = true
+
+                while (reader.readLine().also { line = it } != null) {
+                    val currentLine = line?.trim() ?: continue
+                    if (currentLine.startsWith("data: ")) {
+                        val dataStr = currentLine.substring(6).trim()
+                        if (dataStr == "[DONE]") break
+
+                        val chunkContent = parseChunk(dataStr)
+                        if (chunkContent.isNotEmpty()) {
+                            accumulatedText += chunkContent
+
+                            if (isFirstChunk) {
+                                _isLoading.value = false
+                                isFirstChunk = false
+                            }
+
+                            var currentAccumulated = accumulatedText
+                            if (currentAccumulated.startsWith("null")) {
+                                currentAccumulated = currentAccumulated.substring(4).trimStart()
+                            }
+
+                            withContext(Dispatchers.Main) {
+                                _messages.value = _messages.value.map { msg ->
+                                    if (msg.id == botMessageId) {
+                                        msg.copy(text = currentAccumulated)
+                                    } else {
+                                        msg
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if (accumulatedText.isEmpty()) {
+                    withContext(Dispatchers.Main) {
+                        _messages.value = _messages.value.map { msg ->
+                            if (msg.id == botMessageId) {
+                                msg.copy(text = "Xin lỗi, tôi chưa thể trả lời câu hỏi này.")
+                            } else {
+                                msg
+                            }
+                        }
+                    }
+                }
             } catch (e: Exception) {
-                val errorMessage = ChatMessage(
-                    id = UUID.randomUUID().toString(),
-                    text = "Xin lỗi, hiện tại tôi không thể trả lời. Vui lòng thử lại sau.",
-                    isUser = false
-                )
-                _messages.value = _messages.value + errorMessage
+                withContext(Dispatchers.Main) {
+                    _messages.value = _messages.value.map { msg ->
+                        if (msg.id == botMessageId) {
+                            msg.copy(text = "Xin lỗi, hiện tại tôi không thể kết nối. Vui lòng thử lại sau.")
+                        } else {
+                            msg
+                        }
+                    }
+                }
             } finally {
                 _isLoading.value = false
             }
+        }
+    }
+
+    private fun parseChunk(jsonStr: String): String {
+        return try {
+            val json = JSONObject(jsonStr)
+            val choices = json.optJSONArray("choices")
+            val rawContent = if (choices != null && choices.length() > 0) {
+                val choice = choices.getJSONObject(0)
+                val delta = choice.optJSONObject("delta")
+                if (delta != null && delta.has("content") && !delta.isNull("content")) {
+                    delta.optString("content", "")
+                } else {
+                    val messageObj = choice.optJSONObject("message")
+                    if (messageObj != null && messageObj.has("content") && !messageObj.isNull("content")) {
+                        messageObj.optString("content", "")
+                    } else ""
+                }
+            } else {
+                if (json.has("reply") && !json.isNull("reply")) {
+                    json.optString("reply", "")
+                } else if (json.has("content") && !json.isNull("content")) {
+                    json.optString("content", "")
+                } else ""
+            }
+            if (rawContent == "null") "" else rawContent
+        } catch (e: Exception) {
+            ""
         }
     }
 }

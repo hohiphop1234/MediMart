@@ -12,9 +12,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -141,11 +141,18 @@ fun FloatingChatBox(
                                         )
                                         .padding(12.dp)
                                 ) {
-                                    Text(
-                                        text = message.text,
-                                        color = if (message.isUser) Color.White else Color.Black,
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
+                                    if (message.isUser) {
+                                        Text(
+                                            text = message.text,
+                                            color = Color.White,
+                                            style = MaterialTheme.typography.bodyMedium
+                                        )
+                                    } else {
+                                        MarkdownText(
+                                            markdown = message.text,
+                                            color = Color.Black
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -186,7 +193,7 @@ fun FloatingChatBox(
                                 .size(44.dp)
                                 .background(MediMartOrange, CircleShape)
                         ) {
-                            Icon(Icons.Default.Send, contentDescription = "Gửi", tint = Color.White)
+                            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Gửi", tint = Color.White)
                         }
                     }
                 }
@@ -213,7 +220,7 @@ fun FloatingChatBox(
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = Icons.Default.Chat,
+                    imageVector = Icons.AutoMirrored.Filled.Chat,
                     contentDescription = "Chat",
                     tint = Color.White,
                     modifier = Modifier.size(28.dp)

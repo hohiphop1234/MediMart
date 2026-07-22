@@ -1,10 +1,12 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const logger = require('./middlewares/logger');
 
 const app = express();
 
 // Middleware
+app.use(logger);
 app.use(cors());
 app.use(express.json());
 

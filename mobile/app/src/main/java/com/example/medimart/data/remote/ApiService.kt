@@ -52,6 +52,10 @@ interface ApiService {
     @POST("chat")
     suspend fun chat(@Body request: com.example.medimart.data.model.ChatRequest): com.example.medimart.data.model.ChatResponse
 
+    @Streaming
+    @POST("chat")
+    suspend fun streamChat(@Body request: com.example.medimart.data.model.ChatRequest): okhttp3.ResponseBody
+
     @Multipart
     @POST("ocr/prescription")
     suspend fun scanPrescription(@Part image: okhttp3.MultipartBody.Part): List<Product>
