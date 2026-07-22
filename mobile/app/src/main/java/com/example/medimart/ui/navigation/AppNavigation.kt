@@ -20,6 +20,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.compose.ui.res.stringResource
+import com.example.medimart.R
 import com.example.medimart.data.repository.AuthRepository
 import com.example.medimart.data.repository.CartRepository
 import com.example.medimart.data.repository.ProductRepository
@@ -115,7 +117,7 @@ fun AppNavigation(
         NavHost(
             navController = navController,
             startDestination = initialDestination!!,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(bottom = innerPadding.calculateBottomPadding())
         ) {
             composable("login") {
                 LoginScreen(
@@ -196,7 +198,7 @@ fun AppNavigation(
                     ProductListViewModel(productRepository)
                 }
                 ProductListScreen(
-                    title = categoryName.ifBlank { "Sản phẩm theo danh mục" },
+                    title = categoryName.ifBlank { stringResource(R.string.category_products_title) },
                     initialQuery = "",
                     categoryId = categoryId,
                     viewModel = productListViewModel,
@@ -224,7 +226,7 @@ fun AppNavigation(
                     ProductListViewModel(productRepository)
                 }
                 ProductListScreen(
-                    title = "Kết quả tìm kiếm",
+                    title = stringResource(R.string.search_results_title),
                     initialQuery = query,
                     categoryId = null,
                     viewModel = productListViewModel,

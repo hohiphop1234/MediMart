@@ -4,15 +4,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.List
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.*
@@ -25,6 +24,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.example.medimart.R
 import com.example.medimart.theme.MediMartOrange
 import com.example.medimart.theme.MediMartTextSecondary
 
@@ -42,10 +43,12 @@ fun BottomNavBar(
     cartBadgeCount: Int = 0
 ) {
     val items = listOf(
-        NavItem("home", "Trang chủ", Icons.Filled.Home, Icons.Outlined.Home),
-        NavItem("category", "Danh mục", Icons.Filled.List, Icons.Outlined.List),
-        NavItem("cart", "Giỏ hàng", Icons.Filled.ShoppingCart, Icons.Outlined.ShoppingCart),
-        NavItem("profile", "Tài khoản", Icons.Filled.Person, Icons.Outlined.Person)
+        NavItem("home", stringResource(R.string.nav_home), Icons.Filled.Home, Icons.Outlined.Home),
+        NavItem("category", stringResource(R.string.nav_category), Icons.AutoMirrored.Filled.List,
+            Icons.AutoMirrored.Outlined.List
+        ),
+        NavItem("cart", stringResource(R.string.nav_cart), Icons.Filled.ShoppingCart, Icons.Outlined.ShoppingCart),
+        NavItem("profile", stringResource(R.string.nav_profile), Icons.Filled.Person, Icons.Outlined.Person)
     )
 
     Box(

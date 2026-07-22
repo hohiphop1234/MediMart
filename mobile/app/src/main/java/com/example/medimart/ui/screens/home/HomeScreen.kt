@@ -88,6 +88,7 @@ fun HomeScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MediMartBg)
+            .statusBarsPadding()
             .verticalScroll(rememberScrollState())
     ) {
         Box(modifier = Modifier.background(MediMartBg).padding(top = 8.dp)) {

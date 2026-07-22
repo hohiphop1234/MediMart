@@ -1,3 +1,48 @@
 <resources>
     <string name="app_name">MediMart</string>
+    <string name="error_loading_data">Error loading data: %1$s</string>
+    <string name="hello_name">Hello %1$s!</string>
+    <string name="search_placeholder">Tìm kiếm sản phẩm&#8230;</string>
+    <string name="search_content_description">Tìm kiếm</string>
+    <string name="flash_sale">⚡ Flash Sale</string>
+    <string name="add_to_cart_content_description">Thêm vào giỏ hàng</string>
+    <string name="price_format">%,dđ</string>
+    <string name="points_format">%1$d Điểm</string>
+
+    <!-- Consultation -->
+    <string name="consultation_title">Cần tư vấn từ Dược sĩ?</string>
+    <string name="consultation_subtitle">Dược sĩ chuyên môn của Medi Mart luôn sẵn sàng hỗ trợ bạn 24/7</string>
+    <string name="call_hotline">Gọi Tổng Đài (Miễn phí)</string>
+    <string name="chat_pharmacist">Chat với Dược sĩ</string>
+    <string name="call_content_description">Gọi điện</string>
+    <string name="message_content_description">Nhắn tin</string>
+
+    <!-- Bottom Nav -->
+    <string name="nav_home">Trang chủ</string>
+    <string name="nav_category">Danh mục</string>
+    <string name="nav_cart">Giỏ hàng</string>
+    <string name="nav_profile">Tài khoản</string>
+
+    <!-- Auth -->
+    <string name="login_title">Đăng nhập</string>
+    <string name="login_subtitle">Nhập email để nhận mã xác thực</string>
+    <string name="email_label">Email</string>
+    <string name="otp_title">Nhập mã OTP</string>
+    <string name="otp_subtitle">Mã xác thực 6 số đã được gửi tới:\n%1$s</string>
+    <string name="invalid_email">Email không hợp lệ</string>
+    <string name="send_otp_error">Không thể gửi mã xác thực</string>
+    <string name="otp_length_error">Mã OTP phải gồm 6 số</string>
+    <string name="verify_otp_error">Mã OTP không đúng hoặc đã hết hạn</string>
+    <string name="continue_button">Tiếp tục</string>
+    <string name="logo_description">Logo MediMart</string>
+    <string name="otp_label">Mã OTP</string>
+    <string name="verify_button">Xác thực</string>
+
+    <!-- Navigation Titles -->
+    <string name="category_products_title">Sản phẩm theo danh mục</string>
+    <string name="search_results_title">Kết quả tìm kiếm</string>
+
+    <!-- Others -->
+    <string name="convenient_shopping">Mua sắm tiện lợi mỗi ngày</string>
+    <string name="fallback_banner_label">Ưu đãi chăm sóc sức khỏe</string>
 </resources>

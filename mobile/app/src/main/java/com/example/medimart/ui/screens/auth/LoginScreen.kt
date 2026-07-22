@@ -17,6 +17,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.medimart.R
+import androidx.compose.ui.res.stringResource
 import com.example.medimart.theme.MediMartDisabledContent
 import com.example.medimart.theme.MediMartDisabledSurface
 import com.example.medimart.theme.MediMartOrange
@@ -50,7 +51,7 @@ fun LoginScreen(
     ) {
         Image(
             painter = painterResource(R.drawable.medimart_logo),
-            contentDescription = "Logo MediMart",
+            contentDescription = stringResource(R.string.logo_description),
             modifier = Modifier
                 .fillMaxWidth()
                 .height(180.dp),
@@ -58,15 +59,15 @@ fun LoginScreen(
             contentScale = ContentScale.Crop
         )
         Spacer(modifier = Modifier.height(24.dp))
-        Text("Đăng nhập", style = MaterialTheme.typography.headlineMedium.copy(color = MediMartTextPrimary))
+        Text(stringResource(R.string.login_title), style = MaterialTheme.typography.headlineMedium.copy(color = MediMartTextPrimary))
         Spacer(modifier = Modifier.height(8.dp))
-        Text("Nhập email để nhận mã xác thực", color = MediMartTextSecondary, style = MaterialTheme.typography.bodyMedium)
+        Text(stringResource(R.string.login_subtitle), color = MediMartTextSecondary, style = MaterialTheme.typography.bodyMedium)
         Spacer(modifier = Modifier.height(32.dp))
 
         OutlinedTextField(
             value = email,
             onValueChange = { email = it.trim() },
-            label = { Text("Email") },
+            label = { Text(stringResource(R.string.email_label)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = { if (canContinue) viewModel.login(email) }),
             singleLine = true,
@@ -96,7 +97,7 @@ fun LoginScreen(
             if (isLoading) {
                 CircularProgressIndicator(color = MediMartDisabledContent, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
             } else {
-                Text("Tiếp tục", style = MaterialTheme.typography.titleMedium, color = if (canContinue) Color.White else MediMartDisabledContent)
+                Text(stringResource(R.string.continue_button), style = MaterialTheme.typography.titleMedium, color = if (canContinue) Color.White else MediMartDisabledContent)
             }
         }
     }

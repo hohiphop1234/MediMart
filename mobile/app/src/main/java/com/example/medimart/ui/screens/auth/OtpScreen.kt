@@ -15,6 +15,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.example.medimart.R
 import com.example.medimart.theme.MediMartDisabledContent
 import com.example.medimart.theme.MediMartDisabledSurface
 import com.example.medimart.theme.MediMartOrange
@@ -46,10 +48,10 @@ fun OtpScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Text("Nhập mã OTP", style = MaterialTheme.typography.headlineMedium.copy(color = MediMartTextPrimary))
+        Text(stringResource(R.string.otp_title), style = MaterialTheme.typography.headlineMedium.copy(color = MediMartTextPrimary))
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            "Mã xác thực 6 số đã được gửi tới:\n$email",
+            stringResource(R.string.otp_subtitle, email),
             color = MediMartTextSecondary,
             style = MaterialTheme.typography.bodyMedium,
             textAlign = TextAlign.Center,
@@ -59,7 +61,7 @@ fun OtpScreen(
         OutlinedTextField(
             value = otp,
             onValueChange = { otp = it.filter(Char::isDigit).take(6) },
-            label = { Text("Mã OTP") },
+            label = { Text(stringResource(R.string.otp_label)) },
             placeholder = { Text("• • • • • •") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             singleLine = true,
@@ -93,7 +95,7 @@ fun OtpScreen(
             if (isLoading) {
                 CircularProgressIndicator(color = MediMartDisabledContent, modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
             } else {
-                Text("Xác thực", style = MaterialTheme.typography.titleMedium, color = if (canVerify) Color.White else MediMartDisabledContent)
+                Text(stringResource(R.string.verify_button), style = MaterialTheme.typography.titleMedium, color = if (canVerify) Color.White else MediMartDisabledContent)
             }
         }
     }

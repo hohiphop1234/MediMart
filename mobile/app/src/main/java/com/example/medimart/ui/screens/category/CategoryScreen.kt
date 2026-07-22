@@ -27,20 +27,23 @@ fun CategoryScreen(viewModel: CategoryViewModel, onCategoryClick: (Category) -> 
     val categories by viewModel.categories.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
 
-    Column(modifier = Modifier.fillMaxSize().background(MediMartBg)) {
-        CenterAlignedTopAppBar(
-            title = { Text("Danh mục sản phẩm", fontWeight = FontWeight.Bold) },
-            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
-        )
-        
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("Danh mục sản phẩm", fontWeight = FontWeight.Bold) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+            )
+        },
+        containerColor = MediMartBg
+    ) { innerPadding ->
         if (isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
         } else {
             LazyVerticalGrid(
                 columns = GridCells.Fixed(3),
-                modifier = Modifier.fillMaxSize().padding(16.dp),
+                modifier = Modifier.fillMaxSize().padding(innerPadding).padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {

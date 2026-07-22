@@ -28,6 +28,8 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
+        val apiUrl = localBuildConfigValue("api.url").ifBlank { "http://10.0.2.2:3000/api/" }
+        buildConfigField("String", "BASE_URL", "\"$apiUrl\"")
         buildConfigField("String", "SUPABASE_URL", "\"${localBuildConfigValue("supabase.url")}\"")
         buildConfigField("String", "SUPABASE_PUBLISHABLE_KEY", "\"${localBuildConfigValue("supabase.publishableKey")}\"")
     }

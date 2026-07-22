@@ -28,7 +28,7 @@ class LongChauApp : Application() {
         ).build()
         
         tokenManager = TokenManager(applicationContext)
-        val apiService = RetrofitClient.createApiService(tokenManager)
+        val apiService = RetrofitClient.createApiService(this, tokenManager)
         
         authRepository = AuthRepository(apiService, tokenManager)
         productRepository = ProductRepository(apiService)

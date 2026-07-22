@@ -1,6 +1,7 @@
 package com.example.medimart.util
 
+import com.example.medimart.BuildConfig
+
 object Constants {
-    // Dùng IP của máy tính (192.168.100.129) để test trên điện thoại thật cùng mạng Wi-Fi
-    const val BASE_URL = "http://192.168.100.129:3000/api/"
+    const val BASE_URL = BuildConfig.BASE_URL
 }

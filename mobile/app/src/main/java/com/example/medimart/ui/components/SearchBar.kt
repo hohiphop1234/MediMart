@@ -16,16 +16,18 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.example.medimart.R
 import com.example.medimart.theme.MediMartTextPrimary
 import com.example.medimart.theme.MediMartTextSecondary
 
 @Composable
 fun SearchBar(
+    modifier: Modifier = Modifier,
     query: String,
     onQueryChange: (String) -> Unit,
     onSearch: () -> Unit = {},
-    modifier: Modifier = Modifier,
-    placeholder: String = "Tìm kiếm sản phẩm..."
+    placeholder: String = stringResource(R.string.search_placeholder)
 ) {
     Box(
         modifier = modifier
@@ -47,7 +49,7 @@ fun SearchBar(
             IconButton(onClick = onSearch, modifier = Modifier.size(32.dp)) {
                 Icon(
                     imageVector = Icons.Default.Search,
-                    contentDescription = "Tìm kiếm",
+                    contentDescription = stringResource(R.string.search_content_description),
                     tint = MediMartTextSecondary,
                     modifier = Modifier.size(24.dp)
                 )

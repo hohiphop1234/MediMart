@@ -14,6 +14,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.example.medimart.R
 import com.example.medimart.theme.MediMartOrange
 import com.example.medimart.theme.MediMartTextPrimary
 
@@ -37,12 +39,12 @@ fun ConsultationSheet(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Cần tư vấn từ Dược sĩ?",
+                text = stringResource(R.string.consultation_title),
                 style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold, color = MediMartTextPrimary)
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = "Dược sĩ chuyên môn của Medi Mart luôn sẵn sàng hỗ trợ bạn 24/7",
+                text = stringResource(R.string.consultation_subtitle),
                 style = MaterialTheme.typography.bodyMedium,
                 color = Color.Gray,
                 textAlign = TextAlign.Center
@@ -61,9 +63,9 @@ fun ConsultationSheet(
                 shape = RoundedCornerShape(28.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MediMartOrange)
             ) {
-                Icon(Icons.Default.Call, contentDescription = "Gọi điện", tint = Color.White)
+                Icon(Icons.Default.Call, contentDescription = stringResource(R.string.call_content_description), tint = Color.White)
                 Spacer(modifier = Modifier.width(12.dp))
-                Text("Gọi Tổng Đài (Miễn phí)", style = MaterialTheme.typography.titleMedium, color = Color.White)
+                Text(stringResource(R.string.call_hotline), style = MaterialTheme.typography.titleMedium, color = Color.White)
             }
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -80,9 +82,9 @@ fun ConsultationSheet(
                 border = BorderStroke(1.dp, MediMartOrange),
                 colors = ButtonDefaults.outlinedButtonColors(contentColor = MediMartOrange)
             ) {
-                Icon(Icons.AutoMirrored.Filled.Message, contentDescription = "Nhắn tin", tint = MediMartOrange)
+                Icon(Icons.AutoMirrored.Filled.Message, contentDescription = stringResource(R.string.message_content_description), tint = MediMartOrange)
                 Spacer(modifier = Modifier.width(12.dp))
-                Text("Chat với Dược sĩ", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.chat_pharmacist), style = MaterialTheme.typography.titleMedium)
             }
             
             Spacer(modifier = Modifier.height(16.dp))

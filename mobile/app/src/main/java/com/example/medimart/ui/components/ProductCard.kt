@@ -19,6 +19,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.example.medimart.R
 import com.example.medimart.data.model.Product
 import com.example.medimart.theme.MediMartOrange
 import com.example.medimart.theme.MediMartRed
@@ -67,7 +69,7 @@ fun ProductCard(
                             .padding(horizontal = 8.dp, vertical = 4.dp)
                     ) {
                         Text(
-                            text = "⚡ Flash Sale", 
+                            text = stringResource(R.string.flash_sale), 
                             color = Color.White, 
                             style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Bold)
                         )
@@ -98,18 +100,18 @@ fun ProductCard(
                     Column {
                         if (showPointPrice && product.isRewardItem) {
                             Text(
-                                text = "${product.pointPrice} Điểm",
+                                text = stringResource(R.string.points_format, product.pointPrice),
                                 style = MaterialTheme.typography.titleMedium.copy(color = MediMartOrange)
                             )
                         } else {
                             val price = product.salePrice ?: product.price
                             Text(
-                                text = "%,dđ".format(price),
+                                text = stringResource(R.string.price_format, price),
                                 style = MaterialTheme.typography.titleMedium.copy(color = MediMartOrange)
                             )
                             if (product.salePrice != null) {
                                 Text(
-                                    text = "%,dđ".format(product.price),
+                                    text = stringResource(R.string.price_format, product.price),
                                     style = MaterialTheme.typography.labelMedium.copy(
                                         color = MediMartTextSecondary,
                                         textDecoration = TextDecoration.LineThrough
@@ -127,7 +129,7 @@ fun ProductCard(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
-                            contentDescription = "Thêm vào giỏ hàng",
+                            contentDescription = stringResource(R.string.add_to_cart_content_description),
                             tint = Color.White,
                             modifier = Modifier.size(20.dp)
                         )

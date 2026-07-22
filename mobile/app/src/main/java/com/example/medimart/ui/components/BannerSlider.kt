@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import com.example.medimart.data.model.Banner
 import com.example.medimart.theme.MediMartOrange
 import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun BannerSlider(banners: List<Banner>) {
@@ -26,7 +27,7 @@ fun BannerSlider(banners: List<Banner>) {
 
     LaunchedEffect(pagerState) {
         while (true) {
-            delay(3000)
+            delay(3000.milliseconds)
             val nextPage = (pagerState.currentPage + 1) % banners.size
             pagerState.animateScrollToPage(nextPage)
         }

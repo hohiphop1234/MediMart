@@ -36,7 +36,11 @@ fun ProfileScreen(
 
     Column(modifier = Modifier.fillMaxSize().background(MediMartBg)) {
         Box(
-            modifier = Modifier.fillMaxWidth().background(MediMartOrange).padding(top = 48.dp, bottom = 32.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MediMartOrange)
+                .statusBarsPadding()
+                .padding(top = 16.dp, bottom = 32.dp),
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {

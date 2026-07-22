@@ -88,14 +88,22 @@ exports.verifyOtp = async (req, res) => {
         const devOtp = getDevOtpConfig();
         if (devOtp && email === devOtp.email && otp === devOtp.code) {
             const admin = getSupabaseAdmin();
-            const { error: createError } = await admin.auth.admin.createUser({
+            const { data: createData, error: createError } = await admin.auth.admin.createUser({
                 email,
                 password: devOtp.password,
                 email_confirm: true,
                 user_metadata: { display_name: 'Development Test User' }
             });
-            if (createError && !/already.*registered|already.*exists/i.test(createError.message)) {
-                throw createError;
+            if (createError) {
+                if (/already.*registered|already.*exists/i.test(createError.message)) {
+                    const { data: usersData } = await admin.auth.admin.listUsers();
+                    const existingUser = usersData?.users?.find(u => u.email === email);
+                    if (existingUser) {
+                        await admin.auth.admin.updateUserById(existingUser.id, { password: devOtp.password, email_confirm: true });
+                    }
+                } else {
+                    throw createError;
+                }
             }
 
             const { data: passwordSession, error: passwordError } = await getSupabasePublicClient().auth.signInWithPassword({

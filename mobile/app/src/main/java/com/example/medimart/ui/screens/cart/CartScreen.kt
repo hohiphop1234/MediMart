@@ -30,13 +30,43 @@ fun CartScreen(viewModel: CartViewModel, onNavigateToHome: () -> Unit, onNavigat
     val items by viewModel.cartItems.collectAsState()
     val totalAmount = items.sumOf { it.price * it.quantity }
 
-    Column(modifier = Modifier.fillMaxSize().background(MediMartBg)) {
-        CenterAlignedTopAppBar(
-            title = { Text("Giỏ hàng", fontWeight = FontWeight.Bold) },
-            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(containerColor = Color.White)
-        )
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = { Text("Giỏ hàng", fontWeight = FontWeight.Bold) },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.White)
+            )
+        },
+        containerColor = MediMartBg,
+        bottomBar = {
+            if (items.isNotEmpty()) {
+                Surface(shadowElevation = 16.dp, color = Color.White) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text("Tổng cộng", color = Color.Gray)
+                            Text("%,d đ".format(totalAmount), color = MediMartOrange, style = MaterialTheme.typography.titleLarge)
+                        }
+                        Button(
+                            onClick = onNavigateToCheckout,
+                            shape = RoundedCornerShape(percent = 50),
+                            colors = ButtonDefaults.buttonColors(containerColor = MediMartOrange),
+                            modifier = Modifier.height(50.dp).padding(horizontal = 16.dp)
+                        ) {
+                            Text("Mua hàng", style = MaterialTheme.typography.titleMedium, color = Color.White)
+                        }
+                    }
+                }
+            }
+        }
+    ) { innerPadding ->
         if (items.isEmpty()) {
-            Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center) {
+            Box(modifier = Modifier.fillMaxSize().padding(innerPadding), contentAlignment = Alignment.Center) {
                 EmptyState(
                     title = "Giỏ hàng rỗng",
                     message = "Bạn chưa chọn sản phẩm nào",
@@ -45,7 +75,14 @@ fun CartScreen(viewModel: CartViewModel, onNavigateToHome: () -> Unit, onNavigat
                 )
             }
         } else {
-            LazyColumn(modifier = Modifier.weight(1f).padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                contentPadding = PaddingValues(vertical = 16.dp)
+            ) {
                 items(items) { item ->
                     Card(
                         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -76,26 +113,6 @@ fun CartScreen(viewModel: CartViewModel, onNavigateToHome: () -> Unit, onNavigat
                                 }
                             }
                         }
-                    }
-                }
-            }
-            Surface(shadowElevation = 16.dp, color = Color.White) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column {
-                        Text("Tổng cộng", color = Color.Gray)
-                        Text("%,d đ".format(totalAmount), color = MediMartOrange, style = MaterialTheme.typography.titleLarge)
-                    }
-                    Button(
-                        onClick = onNavigateToCheckout,
-                        shape = RoundedCornerShape(percent = 50),
-                        colors = ButtonDefaults.buttonColors(containerColor = MediMartOrange),
-                        modifier = Modifier.height(50.dp).padding(horizontal = 16.dp)
-                    ) {
-                        Text("Mua hàng", style = MaterialTheme.typography.titleMedium, color = Color.White)
                     }
                 }
             }

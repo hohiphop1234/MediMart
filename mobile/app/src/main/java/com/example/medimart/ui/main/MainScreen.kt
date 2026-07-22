@@ -9,6 +9,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
+import androidx.compose.ui.res.stringResource
+import com.example.medimart.R
 import com.example.medimart.data.DefaultDataRepository
 import com.example.medimart.theme.MediMartTheme
 
@@ -27,7 +29,7 @@ fun MainScreen(
       MainScreen(data = (state as MainScreenUiState.Success).data, modifier = modifier)
     }
     is MainScreenUiState.Error -> {
-      Text("Error loading data: ${(state as MainScreenUiState.Error).throwable.message}")
+      Text(stringResource(R.string.error_loading_data, (state as MainScreenUiState.Error).throwable.message ?: ""))
     }
   }
 }
@@ -39,7 +41,7 @@ internal fun MainScreen(data: List<String>, modifier: Modifier = Modifier) {
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
-  Text(text = "Hello $name!", modifier = modifier)
+  Text(text = stringResource(R.string.hello_name, name), modifier = modifier)
 }
 
 @Preview(showBackground = true)

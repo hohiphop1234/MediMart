@@ -20,7 +20,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         
         val tokenManager = TokenManager(this)
-        val apiService = RetrofitClient.createApiService(tokenManager)
+        val apiService = RetrofitClient.createApiService(this, tokenManager)
         val appDatabase = AppDatabase.getDatabase(this)
 
         val authRepository = AuthRepository(apiService, tokenManager)

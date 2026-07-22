@@ -1,5 +1,6 @@
 package com.example.medimart.ui.components
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,7 +15,9 @@ import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
+import kotlin.time.Duration.Companion.milliseconds
 
+@SuppressLint("DefaultLocale")
 @Composable
 fun CountdownTimer(endTimeString: String) {
     val endTimeMillis = remember(endTimeString) { parseEndTime(endTimeString) }
@@ -22,7 +25,7 @@ fun CountdownTimer(endTimeString: String) {
 
     LaunchedEffect(endTimeMillis) {
         while (endTimeMillis > System.currentTimeMillis()) {
-            delay(1000)
+            delay(1000.milliseconds)
             nowMillis = System.currentTimeMillis()
         }
     }
