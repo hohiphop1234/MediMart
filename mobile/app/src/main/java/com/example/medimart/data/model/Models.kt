@@ -3,8 +3,7 @@ package com.example.medimart.data.model
 data class User(
     val _id: String,
     val name: String,
-    val email: String,
-    val loyaltyPoints: Int
+    val email: String
 )
 
 data class Product(
@@ -18,9 +17,7 @@ data class Product(
     val categoryId: String,
     val brand: String,
     val isFlashSale: Boolean,
-    val isBestSeller: Boolean,
-    val isRewardItem: Boolean,
-    val pointPrice: Int
+    val isBestSeller: Boolean
 )
 
 data class Category(
@@ -55,7 +52,6 @@ data class AddressRequest(
 data class Order(
     val _id: String,
     val totalAmount: Int,
-    val earnedPoints: Int = 0,
     val status: String,
     val paymentMethod: String,
     val createdAt: String,
@@ -83,7 +79,6 @@ data class OrderAddress(
 data class OrderDetail(
     val _id: String,
     val totalAmount: Int,
-    val earnedPoints: Int,
     val status: String,
     val paymentMethod: String,
     val createdAt: String,
@@ -124,6 +119,9 @@ data class CheckoutRequest(
 data class CheckoutResponse(
     val orderId: String,
     val totalAmount: Int,
-    val earnedPoints: Int = 0,
     val status: String
 )
+
+data class ChatRequest(val message: String)
+data class ChatResponse(val reply: String)
+data class ChatMessage(val id: String, val text: String, val isUser: Boolean, val timestamp: Long = System.currentTimeMillis())

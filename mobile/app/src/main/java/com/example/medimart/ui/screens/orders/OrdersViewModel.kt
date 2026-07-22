@@ -136,14 +136,7 @@ class OrdersViewModel(
     private fun cancelErrorMessage(error: Throwable): String {
         val httpError = error as? HttpException
         if (httpError?.code() == 409) {
-            val responseBody = runCatching {
-                httpError.response()?.errorBody()?.string().orEmpty()
-            }.getOrDefault("")
-            return if ("Reward points" in responseBody) {
-                "Không thể hủy vì điểm thưởng của đơn này đã được sử dụng"
-            } else {
-                "Chỉ có thể hủy đơn đang chờ xác nhận"
-            }
+            return "Chỉ có thể hủy đơn đang chờ xác nhận"
         }
         if (httpError?.code() == 404) {
             return "Không tìm thấy đơn hàng"

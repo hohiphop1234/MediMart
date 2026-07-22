@@ -442,14 +442,6 @@ private fun OrderTotalCard(order: OrderDetail) {
                     color = MediMartOrange
                 )
             }
-            if (order.earnedPoints > 0) {
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "+${order.earnedPoints} điểm thành viên",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF047857)
-                )
-            }
         }
     }
 }

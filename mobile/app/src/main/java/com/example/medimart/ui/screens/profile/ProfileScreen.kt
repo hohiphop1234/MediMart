@@ -61,14 +61,6 @@ fun ProfileScreen(
                     user?.email ?: if (isLoading) "Đang tải thông tin..." else "Chưa thể tải thông tin",
                     color = Color.White.copy(alpha = 0.8f)
                 )
-                Spacer(modifier = Modifier.height(8.dp))
-                Box(modifier = Modifier.background(Color.White.copy(alpha = 0.2f), RoundedCornerShape(16.dp)).padding(horizontal = 16.dp, vertical = 4.dp)) {
-                    Text(
-                        if (user != null) "${user!!.loyaltyPoints} Điểm" else "Điểm thành viên",
-                        color = Color.White,
-                        fontWeight = FontWeight.Bold
-                    )
-                }
             }
         }
         

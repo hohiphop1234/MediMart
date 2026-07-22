@@ -40,9 +40,6 @@ interface ApiService {
     @PUT("users/profile")
     suspend fun updateProfile(@Body user: User): User
 
-    @GET("users/me/points")
-    suspend fun getMyPoints(): Map<String, Int>
-
     @GET("users/addresses")
     suspend fun getAddresses(): List<Address>
 
@@ -52,11 +49,12 @@ interface ApiService {
     @DELETE("users/addresses/{id}")
     suspend fun deleteAddress(@Path("id") id: String): Map<String, Boolean>
 
-    @GET("rewards")
-    suspend fun getRewards(@Query("maxPoints") maxPoints: Int? = null): List<Product>
+    @POST("chat")
+    suspend fun chat(@Body request: com.example.medimart.data.model.ChatRequest): com.example.medimart.data.model.ChatResponse
 
-    @POST("rewards/redeem")
-    suspend fun redeemReward(@Body request: Map<String, String>): Map<String, Any>
+    @Multipart
+    @POST("ocr/prescription")
+    suspend fun scanPrescription(@Part image: okhttp3.MultipartBody.Part): List<Product>
 
     @POST("orders/checkout")
     suspend fun checkout(@Body request: CheckoutRequest): CheckoutResponse

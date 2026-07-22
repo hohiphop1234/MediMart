@@ -57,17 +57,14 @@ fun AllComponentsPreview() {
                     categoryId = "cat1",
                     brand = "Sanofi",
                     isFlashSale = true,
-                    isBestSeller = true,
-                    isRewardItem = true,
-                    pointPrice = 5000
+                    isBestSeller = true
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                     ProductCard(product = mockProduct, onProductClick = {}, onAddToCartClick = {})
                     ProductCard(
                         product = mockProduct.copy(isFlashSale = false),
                         onProductClick = {},
-                        onAddToCartClick = {},
-                        showPointPrice = true
+                        onAddToCartClick = {}
                     )
                 }
 

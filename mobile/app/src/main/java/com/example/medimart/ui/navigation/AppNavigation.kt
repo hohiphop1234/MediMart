@@ -4,7 +4,13 @@ import android.net.Uri
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FabPosition
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,7 +27,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.graphics.Color
 import com.example.medimart.R
+import com.example.medimart.data.remote.ApiService
 import com.example.medimart.data.repository.AuthRepository
 import com.example.medimart.data.repository.CartRepository
 import com.example.medimart.data.repository.ProductRepository
@@ -49,6 +57,10 @@ import com.example.medimart.ui.screens.product.ProductDetailViewModel
 import com.example.medimart.ui.screens.products.ProductListScreen
 import com.example.medimart.ui.screens.products.ProductListViewModel
 import com.example.medimart.theme.MediMartOrange
+import com.example.medimart.ui.screens.prescription.PrescriptionViewModel
+import com.example.medimart.ui.screens.prescription.PrescriptionScreen
+import com.example.medimart.ui.screens.chat.ChatViewModel
+import com.example.medimart.ui.components.FloatingChatBox
 import kotlinx.coroutines.launch
 
 @Composable
@@ -57,7 +69,8 @@ fun AppNavigation(
     productRepository: ProductRepository,
     cartRepository: CartRepository,
     userRepository: UserRepository,
-    orderRepository: OrderRepository
+    orderRepository: OrderRepository,
+    apiService: ApiService
 ) {
     var initialDestination by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(authRepository) {
@@ -84,6 +97,10 @@ fun AppNavigation(
     val checkoutViewModel = remember { CheckoutViewModel(cartRepository, orderRepository, userRepository) }
     val ordersViewModel = remember { OrdersViewModel(orderRepository) }
     val productDetailViewModel = remember { ProductDetailViewModel(productRepository) }
+    val chatViewModel = remember { ChatViewModel(apiService) }
+    val prescriptionViewModel = remember { PrescriptionViewModel(productRepository) }
+    
+    var showPrescriptionSheet by remember { mutableStateOf(false) }
 
     LaunchedEffect(currentRoute) {
         when (currentRoute) {
@@ -98,6 +115,18 @@ fun AppNavigation(
     val isBottomBarVisible = currentRoute in listOf("home", "category", "cart", "profile")
 
     Scaffold(
+        floatingActionButton = {
+            if (isBottomBarVisible) {
+                FloatingActionButton(
+                    onClick = { showPrescriptionSheet = true },
+                    shape = CircleShape,
+                    containerColor = MediMartOrange
+                ) {
+                    Icon(Icons.Default.CameraAlt, contentDescription = "Đơn thuốc", tint = Color.White)
+                }
+            }
+        },
+        floatingActionButtonPosition = FabPosition.Center,
         bottomBar = {
             if (isBottomBarVisible) {
                 BottomNavBar(
@@ -313,6 +342,31 @@ fun AppNavigation(
                     }
                 )
             }
+        }
+        
+        if (showPrescriptionSheet) {
+            PrescriptionScreen(
+                viewModel = prescriptionViewModel,
+                onProductClick = { product ->
+                    navController.navigate("product/${Uri.encode(product._id)}")
+                },
+                onAddToCartClick = { product ->
+                    cartViewModel.addToCart(
+                        com.example.medimart.data.local.CartEntity(
+                            productId = product._id,
+                            name = product.name,
+                            price = product.salePrice ?: product.price,
+                            imageUrl = product.imageUrl,
+                            quantity = 1
+                        )
+                    )
+                },
+                onDismiss = { showPrescriptionSheet = false }
+            )
+        }
+        
+        if (currentRoute !in listOf("login", "otp/{email}")) {
+            FloatingChatBox(viewModel = chatViewModel)
         }
     }
 }

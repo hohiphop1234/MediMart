@@ -11,11 +11,11 @@ class LongChauApp : Application() {
     lateinit var database: AppDatabase
     lateinit var tokenManager: TokenManager
     
+    lateinit var apiService: com.example.medimart.data.remote.ApiService
     lateinit var authRepository: AuthRepository
     lateinit var productRepository: ProductRepository
     lateinit var cartRepository: CartRepository
     lateinit var userRepository: UserRepository
-    lateinit var rewardRepository: RewardRepository
     lateinit var orderRepository: OrderRepository
 
     override fun onCreate() {
@@ -28,13 +28,12 @@ class LongChauApp : Application() {
         ).build()
         
         tokenManager = TokenManager(applicationContext)
-        val apiService = RetrofitClient.createApiService(this, tokenManager)
+        apiService = RetrofitClient.createApiService(this, tokenManager)
         
         authRepository = AuthRepository(apiService, tokenManager)
         productRepository = ProductRepository(apiService)
         cartRepository = CartRepository(database.cartDao())
         userRepository = UserRepository(apiService)
-        rewardRepository = RewardRepository(apiService)
         orderRepository = OrderRepository(apiService)
     }
 }

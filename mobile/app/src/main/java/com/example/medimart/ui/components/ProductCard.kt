@@ -32,8 +32,7 @@ fun ProductCard(
     product: Product,
     onProductClick: (Product) -> Unit,
     onAddToCartClick: (Product) -> Unit,
-    modifier: Modifier = Modifier,
-    showPointPrice: Boolean = false
+    modifier: Modifier = Modifier
 ) {
     Card(
         modifier = modifier
@@ -97,27 +96,19 @@ fun ProductCard(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.Bottom
                 ) {
-                    Column {
-                        if (showPointPrice && product.isRewardItem) {
+                        val price = product.salePrice ?: product.price
+                        Text(
+                            text = stringResource(R.string.price_format, price),
+                            style = MaterialTheme.typography.titleMedium.copy(color = MediMartOrange)
+                        )
+                        if (product.salePrice != null) {
                             Text(
-                                text = stringResource(R.string.points_format, product.pointPrice),
-                                style = MaterialTheme.typography.titleMedium.copy(color = MediMartOrange)
-                            )
-                        } else {
-                            val price = product.salePrice ?: product.price
-                            Text(
-                                text = stringResource(R.string.price_format, price),
-                                style = MaterialTheme.typography.titleMedium.copy(color = MediMartOrange)
-                            )
-                            if (product.salePrice != null) {
-                                Text(
-                                    text = stringResource(R.string.price_format, product.price),
-                                    style = MaterialTheme.typography.labelMedium.copy(
-                                        color = MediMartTextSecondary,
-                                        textDecoration = TextDecoration.LineThrough
-                                    )
+                                text = stringResource(R.string.price_format, product.price),
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    color = MediMartTextSecondary,
+                                    textDecoration = TextDecoration.LineThrough
                                 )
-                            }
+                            )
                         }
                     }
                     
@@ -138,4 +129,3 @@ fun ProductCard(
             }
         }
     }
-}

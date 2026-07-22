@@ -36,7 +36,8 @@ class MainActivity : ComponentActivity() {
                     productRepository = productRepository,
                     cartRepository = cartRepository,
                     userRepository = userRepository,
-                    orderRepository = orderRepository
+                    orderRepository = orderRepository,
+                    apiService = apiService
                 )
             }
         }

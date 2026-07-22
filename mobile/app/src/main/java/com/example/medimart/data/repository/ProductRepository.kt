@@ -33,4 +33,8 @@ class ProductRepository(private val apiService: ApiService) {
     suspend fun getProductById(id: String): Result<Product> = try {
         Result.success(apiService.getProductById(id))
     } catch (e: Exception) { Result.failure(e) }
+
+    suspend fun scanPrescription(image: okhttp3.MultipartBody.Part): Result<List<Product>> = try {
+        Result.success(apiService.scanPrescription(image))
+    } catch (e: Exception) { Result.failure(e) }
 }
