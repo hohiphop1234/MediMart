@@ -111,6 +111,9 @@ dependencies {
   // Coil
   implementation(libs.coil.compose)
 
+  // OSMDroid (OpenStreetMap)
+  implementation("org.osmdroid:osmdroid-android:6.1.18")
+
   // Room
   implementation(libs.room.runtime)
   implementation(libs.room.ktx)

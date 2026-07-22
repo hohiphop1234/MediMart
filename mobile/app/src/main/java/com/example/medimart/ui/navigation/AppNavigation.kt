@@ -35,8 +35,8 @@ import com.example.medimart.ui.screens.auth.LoginScreen
 import com.example.medimart.ui.screens.auth.OtpScreen
 import com.example.medimart.ui.screens.cart.CartScreen
 import com.example.medimart.ui.screens.cart.CartViewModel
-import com.example.medimart.ui.screens.category.CategoryScreen
-import com.example.medimart.ui.screens.category.CategoryViewModel
+import com.example.medimart.ui.screens.store.StoreScreen
+import com.example.medimart.ui.screens.store.StoreViewModel
 import com.example.medimart.ui.screens.home.HomeScreen
 import com.example.medimart.ui.screens.home.HomeViewModel
 import com.example.medimart.ui.screens.profile.ProfileScreen
@@ -86,7 +86,7 @@ fun AppNavigation(
     val authViewModel = remember { AuthViewModel(authRepository) }
     val homeViewModel = remember { HomeViewModel(productRepository) }
     val cartViewModel = remember { CartViewModel(cartRepository) }
-    val categoryViewModel = remember { CategoryViewModel(productRepository) }
+    val storeViewModel = remember { StoreViewModel() }
     val profileViewModel = remember { ProfileViewModel(userRepository) }
     val checkoutViewModel = remember { CheckoutViewModel(cartRepository, orderRepository, userRepository) }
     val ordersViewModel = remember { OrdersViewModel(orderRepository) }
@@ -106,7 +106,7 @@ fun AppNavigation(
     val cartItems by cartViewModel.cartItems.collectAsState()
     val cartBadgeCount = cartItems.sumOf { it.quantity }
 
-    val isBottomBarVisible = currentRoute in listOf("home", "category", "cart", "profile")
+    val isBottomBarVisible = currentRoute in listOf("home", "store", "cart", "profile")
 
     Box(modifier = Modifier.fillMaxSize()) {
     Scaffold(
@@ -261,15 +261,8 @@ fun AppNavigation(
                 )
             }
 
-            composable("category") {
-                CategoryScreen(
-                    viewModel = categoryViewModel,
-                    onCategoryClick = { category ->
-                        navController.navigate(
-                            "products/category/${Uri.encode(category._id)}/${Uri.encode(category.name)}"
-                        )
-                    }
-                )
+            composable("store") {
+                StoreScreen(viewModel = storeViewModel)
             }
             
             composable("cart") {

@@ -20,6 +20,7 @@
     <!-- Bottom Nav -->
     <string name="nav_home">Trang chủ</string>
     <string name="nav_category">Danh mục</string>
+    <string name="nav_store">Cửa hàng</string>
     <string name="nav_cart">Giỏ hàng</string>
     <string name="nav_profile">Tài khoản</string>
 

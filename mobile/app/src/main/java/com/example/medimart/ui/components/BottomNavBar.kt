@@ -7,12 +7,12 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material3.*
@@ -47,8 +47,8 @@ fun BottomNavBar(
 ) {
     val items = listOf(
         NavItem("home", stringResource(R.string.nav_home), Icons.Filled.Home, Icons.Outlined.Home),
-        NavItem("category", stringResource(R.string.nav_category), Icons.AutoMirrored.Filled.List,
-            Icons.AutoMirrored.Outlined.List
+        NavItem("store", stringResource(R.string.nav_store), Icons.Filled.LocationOn,
+            Icons.Outlined.LocationOn
         ),
         NavItem("cart", stringResource(R.string.nav_cart), Icons.Filled.ShoppingCart, Icons.Outlined.ShoppingCart),
         NavItem("profile", stringResource(R.string.nav_profile), Icons.Filled.Person, Icons.Outlined.Person)
