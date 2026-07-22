@@ -8,7 +8,7 @@ data class StoreBranch(
 
 data class StoreBranchWithDistance(
     val branch: StoreBranch,
-    val distanceKm: Double
+    val distanceKm: Double?
 )
 
 object StoreBranchData {

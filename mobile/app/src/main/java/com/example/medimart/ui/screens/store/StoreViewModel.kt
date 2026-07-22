@@ -11,25 +11,46 @@ import kotlin.math.pow
 import kotlin.math.sin
 import kotlin.math.sqrt
 
+enum class StoreLocationStatus {
+    REQUESTING_PERMISSION,
+    LOCATING,
+    AVAILABLE,
+    PERMISSION_DENIED,
+    UNAVAILABLE
+}
+
+data class StoreUiState(
+    val branches: List<StoreBranchWithDistance> = branchesWithoutDistance(),
+    val userLocation: Pair<Double, Double>? = null,
+    val locationStatus: StoreLocationStatus = StoreLocationStatus.REQUESTING_PERMISSION
+)
+
 class StoreViewModel : ViewModel() {
-    private val _branches = MutableStateFlow<List<StoreBranchWithDistance>>(emptyList())
-    val branches = _branches.asStateFlow()
+    private val _uiState = MutableStateFlow(StoreUiState())
+    val uiState = _uiState.asStateFlow()
 
-    private val _userLocation = MutableStateFlow<Pair<Double, Double>?>(null)
-    val userLocation = _userLocation.asStateFlow()
+    fun beginLocationLookup() {
+        _uiState.value = _uiState.value.copy(locationStatus = StoreLocationStatus.LOCATING)
+    }
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading = _isLoading.asStateFlow()
+    fun onLocationPermissionDenied() {
+        _uiState.value = _uiState.value.copy(
+            branches = branchesWithoutDistance(),
+            userLocation = null,
+            locationStatus = StoreLocationStatus.PERMISSION_DENIED
+        )
+    }
 
-    init {
-        _branches.value = StoreBranchData.branches.map {
-            StoreBranchWithDistance(it, 0.0)
-        }
+    fun onLocationUnavailable() {
+        _uiState.value = _uiState.value.copy(
+            branches = branchesWithoutDistance(),
+            userLocation = null,
+            locationStatus = StoreLocationStatus.UNAVAILABLE
+        )
     }
 
     fun updateUserLocation(latitude: Double, longitude: Double) {
-        _userLocation.value = Pair(latitude, longitude)
-        _branches.value = StoreBranchData.branches
+        val branchesWithDistance = StoreBranchData.branches
             .map { branch ->
                 StoreBranchWithDistance(
                     branch = branch,
@@ -37,6 +58,14 @@ class StoreViewModel : ViewModel() {
                 )
             }
             .sortedBy { it.distanceKm }
+
+        // Publish the location and its matching distances atomically so the UI
+        // never renders a real location together with placeholder 0.00 km values.
+        _uiState.value = StoreUiState(
+            branches = branchesWithDistance,
+            userLocation = latitude to longitude,
+            locationStatus = StoreLocationStatus.AVAILABLE
+        )
     }
 
     private fun haversine(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
@@ -50,3 +79,6 @@ class StoreViewModel : ViewModel() {
         return r * c
     }
 }
+
+private fun branchesWithoutDistance(): List<StoreBranchWithDistance> =
+    StoreBranchData.branches.map { StoreBranchWithDistance(it, distanceKm = null) }
