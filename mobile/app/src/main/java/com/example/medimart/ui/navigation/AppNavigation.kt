@@ -4,13 +4,7 @@ import android.net.Uri
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FabPosition
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,7 +21,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.graphics.Color
+
 import com.example.medimart.R
 import com.example.medimart.data.remote.ApiService
 import com.example.medimart.data.repository.AuthRepository
@@ -114,19 +108,8 @@ fun AppNavigation(
 
     val isBottomBarVisible = currentRoute in listOf("home", "category", "cart", "profile")
 
+    Box(modifier = Modifier.fillMaxSize()) {
     Scaffold(
-        floatingActionButton = {
-            if (isBottomBarVisible) {
-                FloatingActionButton(
-                    onClick = { showPrescriptionSheet = true },
-                    shape = CircleShape,
-                    containerColor = MediMartOrange
-                ) {
-                    Icon(Icons.Default.CameraAlt, contentDescription = "Đơn thuốc", tint = Color.White)
-                }
-            }
-        },
-        floatingActionButtonPosition = FabPosition.Center,
         bottomBar = {
             if (isBottomBarVisible) {
                 BottomNavBar(
@@ -138,7 +121,8 @@ fun AppNavigation(
                             restoreState = true
                         }
                     },
-                    cartBadgeCount = cartBadgeCount
+                    cartBadgeCount = cartBadgeCount,
+                    onPrescriptionClick = { showPrescriptionSheet = true }
                 )
             }
         }
@@ -364,9 +348,11 @@ fun AppNavigation(
                 onDismiss = { showPrescriptionSheet = false }
             )
         }
+    } // end Scaffold
         
-        if (currentRoute !in listOf("login", "otp/{email}")) {
-            FloatingChatBox(viewModel = chatViewModel)
-        }
+    // FloatingChatBox OUTSIDE Scaffold so it's not clipped by bottom bar
+    if (currentRoute !in listOf("login", "otp/{email}")) {
+        FloatingChatBox(viewModel = chatViewModel)
     }
+    } // end Box
 }

@@ -112,17 +112,18 @@ fun ProductCard(
                         }
                     }
                     
-                    IconButton(
-                        onClick = { onAddToCartClick(product) },
+                    Box(
                         modifier = Modifier
                             .size(32.dp)
                             .background(MediMartOrange, CircleShape)
+                            .clickable { onAddToCartClick(product) },
+                        contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.Add,
                             contentDescription = stringResource(R.string.add_to_cart_content_description),
                             tint = Color.White,
-                            modifier = Modifier.size(20.dp)
+                            modifier = Modifier.size(18.dp)
                         )
                     }
                 }

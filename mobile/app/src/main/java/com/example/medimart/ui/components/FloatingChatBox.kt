@@ -20,6 +20,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
@@ -44,35 +45,37 @@ fun FloatingChatBox(
 
     val density = LocalDensity.current
     val configuration = LocalConfiguration.current
-    
+
     val screenWidth = with(density) { configuration.screenWidthDp.dp.toPx() }
     val screenHeight = with(density) { configuration.screenHeightDp.dp.toPx() }
 
-    var offsetX by remember { mutableStateOf(screenWidth - 200f) }
-    var offsetY by remember { mutableStateOf(screenHeight - 400f) }
+    var offsetX by remember { mutableFloatStateOf(screenWidth - 200f) }
+    var offsetY by remember { mutableFloatStateOf(screenHeight - 400f) }
 
     Box(modifier = modifier.fillMaxSize()) {
+        // Chat panel
         AnimatedVisibility(
             visible = isChatOpen,
             enter = slideInVertically(initialOffsetY = { it }),
             exit = slideOutVertically(targetOffsetY = { it }),
-            modifier = Modifier.align(Alignment.BottomEnd)
+            modifier = Modifier.align(Alignment.BottomCenter)
         ) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .fillMaxHeight(0.6f)
-                    .padding(top = 16.dp),
+                    .fillMaxHeight(0.55f)
+                    .navigationBarsPadding(),
                 shape = RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 16.dp),
                 colors = CardDefaults.cardColors(containerColor = MediMartBg)
             ) {
                 Column(modifier = Modifier.fillMaxSize()) {
+                    // Header
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(MediMartOrange)
-                            .padding(16.dp),
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
@@ -84,22 +87,25 @@ fun FloatingChatBox(
                         )
                         IconButton(
                             onClick = { viewModel.toggleChat() },
-                            modifier = Modifier.size(24.dp)
+                            modifier = Modifier.size(32.dp)
                         ) {
                             Icon(Icons.Default.Close, contentDescription = "Đóng", tint = Color.White)
                         }
                     }
 
+                    // Messages
                     LazyColumn(
                         modifier = Modifier
                             .weight(1f)
-                            .padding(16.dp),
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
                         reverseLayout = true
                     ) {
                         if (isLoading) {
                             item {
                                 Row(
-                                    modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp),
                                     horizontalArrangement = Arrangement.Start
                                 ) {
                                     CircularProgressIndicator(
@@ -109,7 +115,7 @@ fun FloatingChatBox(
                                 }
                             }
                         }
-                        
+
                         items(messages.reversed()) { message ->
                             Row(
                                 modifier = Modifier
@@ -119,7 +125,7 @@ fun FloatingChatBox(
                             ) {
                                 Box(
                                     modifier = Modifier
-                                        .fillMaxWidth(0.8f)
+                                        .widthIn(max = 260.dp)
                                         .background(
                                             if (message.isUser) MediMartOrange else Color.White,
                                             RoundedCornerShape(
@@ -129,23 +135,29 @@ fun FloatingChatBox(
                                                 bottomEnd = if (message.isUser) 0.dp else 16.dp
                                             )
                                         )
+                                        .then(
+                                            if (!message.isUser) Modifier.shadow(1.dp, RoundedCornerShape(16.dp))
+                                            else Modifier
+                                        )
                                         .padding(12.dp)
                                 ) {
                                     Text(
                                         text = message.text,
-                                        color = if (message.isUser) Color.White else Color.Black
+                                        color = if (message.isUser) Color.White else Color.Black,
+                                        style = MaterialTheme.typography.bodyMedium
                                     )
                                 }
                             }
                         }
                     }
 
+                    // Input bar
                     var inputText by remember { mutableStateOf("") }
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(Color.White)
-                            .padding(16.dp),
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         TextField(
@@ -159,16 +171,19 @@ fun FloatingChatBox(
                                 focusedIndicatorColor = Color.Transparent,
                                 unfocusedIndicatorColor = Color.Transparent
                             ),
-                            shape = RoundedCornerShape(24.dp)
+                            shape = RoundedCornerShape(24.dp),
+                            singleLine = true
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         IconButton(
                             onClick = {
-                                viewModel.sendMessage(inputText)
-                                inputText = ""
+                                if (inputText.isNotBlank()) {
+                                    viewModel.sendMessage(inputText)
+                                    inputText = ""
+                                }
                             },
                             modifier = Modifier
-                                .size(48.dp)
+                                .size(44.dp)
                                 .background(MediMartOrange, CircleShape)
                         ) {
                             Icon(Icons.Default.Send, contentDescription = "Gửi", tint = Color.White)
@@ -178,6 +193,7 @@ fun FloatingChatBox(
             }
         }
 
+        // Floating icon (draggable)
         if (!isChatOpen) {
             Box(
                 modifier = Modifier
@@ -185,11 +201,12 @@ fun FloatingChatBox(
                     .pointerInput(Unit) {
                         detectDragGestures { change, dragAmount ->
                             change.consume()
-                            offsetX += dragAmount.x
-                            offsetY += dragAmount.y
+                            offsetX = (offsetX + dragAmount.x).coerceIn(0f, screenWidth - 160f)
+                            offsetY = (offsetY + dragAmount.y).coerceIn(0f, screenHeight - 200f)
                         }
                     }
-                    .size(60.dp)
+                    .size(56.dp)
+                    .shadow(8.dp, CircleShape)
                     .clip(CircleShape)
                     .background(MediMartOrange)
                     .clickable { viewModel.toggleChat() },
@@ -199,7 +216,7 @@ fun FloatingChatBox(
                     imageVector = Icons.Default.Chat,
                     contentDescription = "Chat",
                     tint = Color.White,
-                    modifier = Modifier.size(30.dp)
+                    modifier = Modifier.size(28.dp)
                 )
             }
         }

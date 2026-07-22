@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
@@ -22,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
@@ -40,7 +42,8 @@ data class NavItem(
 fun BottomNavBar(
     currentRoute: String,
     onNavigate: (String) -> Unit,
-    cartBadgeCount: Int = 0
+    cartBadgeCount: Int = 0,
+    onPrescriptionClick: () -> Unit = {}
 ) {
     val items = listOf(
         NavItem("home", stringResource(R.string.nav_home), Icons.Filled.Home, Icons.Outlined.Home),
@@ -70,9 +73,47 @@ fun BottomNavBar(
             verticalAlignment = Alignment.CenterVertically
         ) {
             items.forEachIndexed { index, item ->
+                // Insert prescription button between category (index 1) and cart (index 2)
                 if (index == 2) {
-                    Spacer(modifier = Modifier.width(48.dp)) // Space for FAB
+                    // Prescription center button
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(percent = 50))
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null
+                            ) { onPrescriptionClick() },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .background(MediMartOrange, CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.ic_prescription),
+                                    contentDescription = "Đơn thuốc",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "Đơn thuốc",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MediMartOrange,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
                 }
+
                 val isSelected = currentRoute == item.route
                 val icon = if (isSelected) item.selectedIcon else item.unselectedIcon
                 val color = if (isSelected) MediMartOrange else MediMartTextSecondary

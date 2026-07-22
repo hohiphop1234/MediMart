@@ -1,9 +1,10 @@
 package com.example.medimart.ui.screens.prescription
 
+import android.Manifest
 import android.net.Uri
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -45,6 +46,7 @@ fun PrescriptionScreen(
     var imageUri by remember { mutableStateOf<Uri?>(null) }
     var showOptions by remember { mutableStateOf(true) }
 
+    // Camera launcher
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture(),
         onResult = { success ->
@@ -55,6 +57,7 @@ fun PrescriptionScreen(
         }
     )
 
+    // Gallery launcher
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent(),
         onResult = { uri: Uri? ->
@@ -66,11 +69,29 @@ fun PrescriptionScreen(
         }
     )
 
+    // Create a temp file and URI for camera
+    fun createTempImageUri(): Uri {
+        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+        val file = File(context.cacheDir, "prescription_$timeStamp.jpg")
+        return FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
+    }
+
+    // Camera permission launcher
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+        onResult = { isGranted ->
+            if (isGranted) {
+                val uri = createTempImageUri()
+                imageUri = uri
+                cameraLauncher.launch(uri)
+            } else {
+                Toast.makeText(context, "Cần quyền truy cập camera để chụp ảnh", Toast.LENGTH_SHORT).show()
+            }
+        }
+    )
+
     fun openCamera() {
-        val file = File(context.cacheDir, "prescription_${SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())}.jpg")
-        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
-        imageUri = uri
-        cameraLauncher.launch(uri)
+        cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
     }
 
     fun openGallery() {
@@ -113,7 +134,9 @@ fun PrescriptionScreen(
                     Button(
                         onClick = { openCamera() },
                         colors = ButtonDefaults.buttonColors(containerColor = MediMartOrange),
-                        modifier = Modifier.weight(1f).padding(end = 8.dp)
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 8.dp)
                     ) {
                         Icon(Icons.Default.PhotoCamera, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
@@ -122,7 +145,9 @@ fun PrescriptionScreen(
                     Button(
                         onClick = { openGallery() },
                         colors = ButtonDefaults.buttonColors(containerColor = MediMartOrange),
-                        modifier = Modifier.weight(1f).padding(start = 8.dp)
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 8.dp)
                     ) {
                         Icon(Icons.Default.PhotoLibrary, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
@@ -161,7 +186,7 @@ fun PrescriptionScreen(
                         items(products) { product ->
                             ProductCard(
                                 product = product,
-                                onProductClick = { 
+                                onProductClick = {
                                     onProductClick(it)
                                     onDismiss()
                                 },
