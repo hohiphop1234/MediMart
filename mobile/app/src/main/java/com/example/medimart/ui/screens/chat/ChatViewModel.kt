@@ -1,5 +1,6 @@
 package com.example.medimart.ui.screens.chat
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.medimart.data.model.ChatMessage
@@ -12,6 +13,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.util.UUID
+
+private const val TAG = "ChatViewModel"
 
 class ChatViewModel(private val apiService: ApiService) : ViewModel() {
     private val _messages = MutableStateFlow<List<ChatMessage>>(emptyList())
@@ -109,6 +112,7 @@ class ChatViewModel(private val apiService: ApiService) : ViewModel() {
                     }
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "Error during chat streaming", e)
                 withContext(Dispatchers.Main) {
                     _messages.value = _messages.value.map { msg ->
                         if (msg.id == botMessageId) {
@@ -148,6 +152,7 @@ class ChatViewModel(private val apiService: ApiService) : ViewModel() {
             }
             if (rawContent == "null") "" else rawContent
         } catch (e: Exception) {
+            Log.e(TAG, "Error parsing chunk: $jsonStr", e)
             ""
         }
     }

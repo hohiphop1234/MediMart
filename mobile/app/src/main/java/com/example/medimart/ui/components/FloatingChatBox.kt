@@ -46,6 +46,7 @@ fun FloatingChatBox(
     val density = LocalDensity.current
     val configuration = LocalConfiguration.current
 
+    // Using Configuration.screenWidthDp instead of LocalWindowInfo.current.containerSize
     val screenWidth = with(density) { configuration.screenWidthDp.dp.toPx() }
     val screenHeight = with(density) { configuration.screenHeightDp.dp.toPx() }
 

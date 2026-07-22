@@ -1,6 +1,7 @@
 package com.example.medimart.data.repository
 
 import android.util.Base64
+import android.util.Log
 import com.example.medimart.data.local.TokenManager
 import com.example.medimart.data.model.LoginRequest
 import com.example.medimart.data.model.OtpRequest
@@ -12,6 +13,8 @@ import org.json.JSONObject
 import retrofit2.HttpException
 import java.io.IOException
 
+private const val TAG = "AuthRepository"
+
 class AuthRepository(
     private val apiService: ApiService,
     private val tokenManager: TokenManager
@@ -21,6 +24,7 @@ class AuthRepository(
             val response = apiService.login(LoginRequest(email))
             Result.success(response["message"] ?: "")
         } catch (e: Exception) {
+            Log.e(TAG, "Error in login", e)
             Result.failure(e)
         }
     }
@@ -31,6 +35,7 @@ class AuthRepository(
             tokenManager.saveSession(response.token, response.refreshToken)
             Result.success(response.user)
         } catch (e: Exception) {
+            Log.e(TAG, "Error in verifyOtp", e)
             Result.failure(e)
         }
     }
@@ -50,15 +55,18 @@ class AuthRepository(
             tokenManager.saveSession(response.token, response.refreshToken ?: refreshToken)
             true
         } catch (e: HttpException) {
+            Log.e(TAG, "Http error in restoreSession: ${e.code()}", e)
             if (e.code() == 400 || e.code() == 401) {
                 tokenManager.clearSession()
                 false
             } else {
                 true
             }
-        } catch (_: IOException) {
+        } catch (e: IOException) {
+            Log.w(TAG, "Network error in restoreSession", e)
             true
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.e(TAG, "Unexpected error in restoreSession", e)
             tokenManager.clearSession()
             false
         }
@@ -77,7 +85,8 @@ class AuthRepository(
             )
             val expiresAt = JSONObject(String(decoded, Charsets.UTF_8)).optLong("exp", 0L)
             expiresAt > System.currentTimeMillis() / 1000L + 60L
-        } catch (_: Exception) {
+        } catch (e: Exception) {
+            Log.e(TAG, "Error checking token expiration", e)
             false
         }
     }

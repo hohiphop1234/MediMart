@@ -123,5 +123,4 @@ data class CheckoutResponse(
 )
 
 data class ChatRequest(val message: String, val stream: Boolean = true)
-data class ChatResponse(val reply: String)
 data class ChatMessage(val id: String, val text: String, val isUser: Boolean, val timestamp: Long = System.currentTimeMillis())

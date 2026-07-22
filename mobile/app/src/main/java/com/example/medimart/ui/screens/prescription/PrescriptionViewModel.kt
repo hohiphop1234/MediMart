@@ -2,6 +2,7 @@ package com.example.medimart.ui.screens.prescription
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.medimart.data.model.Product
@@ -13,6 +14,8 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.InputStream
+
+private const val TAG = "PrescriptionViewModel"
 
 class PrescriptionViewModel(private val productRepository: ProductRepository) : ViewModel() {
     private val _products = MutableStateFlow<List<Product>>(emptyList())
@@ -40,9 +43,11 @@ class PrescriptionViewModel(private val productRepository: ProductRepository) : 
                 result.onSuccess {
                     _products.value = it
                 }.onFailure {
+                    Log.e(TAG, "scanPrescription failed", it)
                     _error.value = it.message ?: "Lỗi khi quét đơn thuốc"
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "Error in scanPrescription", e)
                 _error.value = e.message ?: "Đã xảy ra lỗi"
             } finally {
                 _isLoading.value = false
