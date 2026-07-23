@@ -38,6 +38,11 @@ exports.searchProducts = async (req, res) => {
         const categoryId = typeof req.query.categoryId === 'string'
             ? req.query.categoryId.trim()
             : '';
+        const sortBy = typeof req.query.sortBy === 'string'
+            ? req.query.sortBy.trim()
+            : 'relevance';
+        const page = req.query.page ? parseInt(req.query.page, 10) : 1;
+        const limit = req.query.limit ? parseInt(req.query.limit, 10) : 20;
 
         if (q.length > 100) {
             return res.status(400).json({ error: 'Search query must be 100 characters or fewer' });
@@ -46,7 +51,10 @@ exports.searchProducts = async (req, res) => {
             return res.status(400).json({ error: 'Invalid category id' });
         }
 
-        const products = await productService.searchProducts(q, categoryId);
+        const validSortOptions = ['relevance', 'price_asc', 'price_desc'];
+        const sanitizedSortBy = validSortOptions.includes(sortBy) ? sortBy : 'relevance';
+
+        const products = await productService.searchProducts(q, categoryId, sanitizedSortBy, page, limit);
         res.json(products.map(serializeProduct));
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -64,18 +72,13 @@ function formatAdminProduct(p) {
         price: Number(p.price),
         salePrice: p.sale_price !== null && p.sale_price !== undefined ? Number(p.sale_price) : null,
         unit: p.unit || '',
-        imagePath: p.image_path || '',
         imageUrl: p.image_path || '',
         categoryId: p.category_id,
-        category_id: p.category_id,
-        Category: p.categories ? { _id: p.categories.id, id: p.categories.id, name: p.categories.name } : null,
-        categories: p.categories,
+        Category: p.categories ? { _id: p.categories.id, name: p.categories.name } : null,
         brand: p.brand || '',
         country: p.country || '',
         isFlashSale: Boolean(p.is_flash_sale),
-        isBestSeller: Boolean(p.is_best_seller),
-        isRewardItem: Boolean(p.is_reward_item),
-        pointPrice: p.point_price
+        isBestSeller: Boolean(p.is_best_seller)
     };
 }
 

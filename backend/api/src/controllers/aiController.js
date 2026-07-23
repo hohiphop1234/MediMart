@@ -7,12 +7,14 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 exports.uploadMiddleware = upload.single('image');
 
+const getAiUrl = () => process.env.PYTHON_AI_URL || 'http://localhost:8000/api';
+
 const processOcrInternal = async (req) => {
     if (!req.file) {
         throw new Error('No image provided. Please upload an image field.');
     }
 
-    const aiUrl = process.env.PYTHON_AI_URL || 'http://localhost:5000';
+    const aiUrl = getAiUrl();
     
     // Use native FormData (available in Node 18+)
     const formData = new FormData();
@@ -35,9 +37,6 @@ const processOcrInternal = async (req) => {
     const medicines = pyData.data?.medicines || [];
     const matchedMedicines = [];
 
-    // Ensure pg_trgm extension is active (runs quickly if already exists)
-    await prisma.$executeRawUnsafe('CREATE EXTENSION IF NOT EXISTS pg_trgm;');
-
     for (const med of medicines) {
         const medName = med.product_name;
         if (!medName) continue;
@@ -52,7 +51,7 @@ const processOcrInternal = async (req) => {
                 image_path as "imagePath",
                 similarity(name, $1) as sim 
             FROM public.products 
-            WHERE similarity(name, $1) > 0.08
+            WHERE similarity(name, $1) > 0.1
             ORDER BY sim DESC 
             LIMIT 3
         `, medName);
@@ -169,7 +168,7 @@ exports.chat = async (req, res) => {
             return res.status(400).json({ error: 'Message is required' });
         }
 
-        const aiUrl = process.env.PYTHON_AI_URL || 'http://localhost:5000';
+        const aiUrl = getAiUrl();
 
         // Forward request to Python backend
         const response = await fetch(`${aiUrl}/chat`, {

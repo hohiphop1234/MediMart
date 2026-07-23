@@ -23,8 +23,6 @@ function serializeProduct(product) {
         country: product.country || '',
         isFlashSale: product.is_flash_sale,
         isBestSeller: product.is_best_seller,
-        isRewardItem: product.is_reward_item,
-        pointPrice: product.point_price,
         attributes: product.attributes || {}
     };
 }

@@ -9,7 +9,6 @@ function serializeOrder(order) {
     return {
         _id: order.id,
         totalAmount: Number(order.total_amount),
-        earnedPoints: order.earned_points,
         status: order.status,
         paymentMethod: order.payment_method,
         createdAt: order.created_at,
@@ -51,7 +50,6 @@ exports.checkout = async (req, res) => {
         res.status(201).json({
             orderId: data.order_id,
             totalAmount: Number(data.total_amount),
-            earnedPoints: data.earned_points,
             status: data.status
         });
     } catch (err) {
@@ -107,11 +105,6 @@ exports.cancelMyOrder = async (req, res) => {
                 status: result.currentStatus || null
             });
         }
-        if (result.outcome === 'POINTS_ALREADY_USED') {
-            return res.status(409).json({
-                error: 'Reward points earned from this order have already been used.'
-            });
-        }
 
         res.json(serializeOrderDetail(result.order));
     } catch (err) {
@@ -123,7 +116,9 @@ exports.cancelMyOrder = async (req, res) => {
 
 exports.getAllOrders = async (req, res) => {
     try {
-        const orders = await orderService.getAllOrders();
+        const page = req.query.page ? parseInt(req.query.page, 10) : 1;
+        const limit = req.query.limit ? parseInt(req.query.limit, 10) : 20;
+        const orders = await orderService.getAllOrders(page, limit);
         res.json(orders);
     } catch (err) {
         res.status(500).json({ error: err.message });

@@ -20,7 +20,6 @@ app.use('/api/banners', require('./routes/banners'));
 app.use('/api/categories', require('./routes/categories'));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/users', require('./routes/users'));
-app.use('/api/rewards', require('./routes/rewards'));
 app.use('/api/orders', require('./routes/orders'));
 
 // AI integration routes (/api/ocr, /api/chat)

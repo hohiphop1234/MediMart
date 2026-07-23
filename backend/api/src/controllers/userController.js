@@ -5,7 +5,6 @@ function serializeProfile(profile, email) {
         _id: profile.id,
         name: profile.display_name || 'Khách hàng',
         email,
-        loyaltyPoints: profile.loyalty_points,
         avatarPath: profile.avatar_path || null
     };
 }
@@ -29,7 +28,7 @@ exports.getProfile = async (req, res) => {
     try {
         const { data, error } = await userClient(req)
             .from('profiles')
-            .select('id, display_name, loyalty_points, avatar_path')
+            .select('id, display_name, avatar_path')
             .eq('id', req.user.userId)
             .single();
         if (error) throw error;
@@ -53,20 +52,6 @@ exports.updateProfile = async (req, res) => {
         });
         if (error) throw error;
         res.json(serializeProfile(data, req.user.email));
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-};
-
-exports.getMyPoints = async (req, res) => {
-    try {
-        const { data, error } = await userClient(req)
-            .from('profiles')
-            .select('loyalty_points')
-            .eq('id', req.user.userId)
-            .single();
-        if (error) throw error;
-        res.json({ points: data.loyalty_points });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

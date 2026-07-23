@@ -66,8 +66,7 @@ class OrderService {
                     user_id: userId
                 },
                 select: {
-                    status: true,
-                    earned_points: true
+                    status: true
                 }
             });
 
@@ -76,16 +75,6 @@ class OrderService {
             }
             if (order.status !== 'PENDING') {
                 return { outcome: 'NOT_CANCELLABLE', currentStatus: order.status };
-            }
-
-            if (order.earned_points > 0) {
-                const profile = await transaction.profiles.findUnique({
-                    where: { id: userId },
-                    select: { loyalty_points: true }
-                });
-                if (!profile || profile.loyalty_points < order.earned_points) {
-                    return { outcome: 'POINTS_ALREADY_USED' };
-                }
             }
 
             const cancelled = await transaction.orders.updateMany({
@@ -99,31 +88,6 @@ class OrderService {
 
             if (cancelled.count !== 1) {
                 return { outcome: 'NOT_CANCELLABLE' };
-            }
-
-            if (order.earned_points > 0) {
-                const pointsReversed = await transaction.profiles.updateMany({
-                    where: {
-                        id: userId,
-                        loyalty_points: { gte: order.earned_points }
-                    },
-                    data: {
-                        loyalty_points: { decrement: order.earned_points }
-                    }
-                });
-
-                if (pointsReversed.count !== 1) {
-                    throw new Error('Unable to reverse order points safely.');
-                }
-
-                await transaction.point_transactions.create({
-                    data: {
-                        user_id: userId,
-                        delta: -order.earned_points,
-                        reason: 'ADMIN_ADJUSTMENT',
-                        order_id: id
-                    }
-                });
             }
 
             const updatedOrder = await transaction.orders.findFirst({
@@ -142,18 +106,26 @@ class OrderService {
             });
 
             return { outcome: 'CANCELLED', order: updatedOrder };
-        }, {
-            isolationLevel: 'Serializable'
         });
     }
 
     // --- Admin APIs ---
 
-    async getAllOrders() {
+    async getAllOrders(page = 1, limit = 20) {
+        const pageNum = Math.max(1, parseInt(page, 10) || 1);
+        const limitNum = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
+        const skip = (pageNum - 1) * limitNum;
+
         return await prisma.orders.findMany({
             orderBy: { created_at: 'desc' },
+            skip,
+            take: limitNum,
             include: {
-                profiles: true,
+                users: {
+                    include: {
+                        profiles: true
+                    }
+                },
                 addresses: true,
                 order_items: {
                     include: { products: true }
@@ -166,7 +138,11 @@ class OrderService {
         return await prisma.orders.findUnique({
             where: { id },
             include: {
-                profiles: true,
+                users: {
+                    include: {
+                        profiles: true
+                    }
+                },
                 addresses: true,
                 order_items: {
                     include: { products: true }

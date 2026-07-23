@@ -27,7 +27,7 @@ async function getAppUser(authUser, accessToken) {
     const client = getSupabaseUserClient(accessToken);
     const { data: profile, error } = await client
         .from('profiles')
-        .select('id, display_name, loyalty_points')
+        .select('id, display_name')
         .eq('id', authUser.id)
         .single();
 
@@ -36,8 +36,7 @@ async function getAppUser(authUser, accessToken) {
     return {
         _id: profile.id,
         name: profile.display_name || 'Khách hàng',
-        email: authUser.email,
-        loyaltyPoints: profile.loyalty_points
+        email: authUser.email
     };
 }
 
