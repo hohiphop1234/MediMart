@@ -3,11 +3,16 @@ package com.example.medimart.ui.screens.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.medimart.data.repository.AuthRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
+@HiltViewModel
+class AuthViewModel @Inject constructor(
+    private val authRepository: AuthRepository
+) : ViewModel() {
     private val _isLoading = MutableStateFlow(false)
     val isLoading = _isLoading.asStateFlow()
 
@@ -49,6 +54,17 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
                 onFailure = { _error.value = it.message ?: "Mã OTP không đúng hoặc đã hết hạn" }
             )
             _isLoading.value = false
+        }
+    }
+
+    suspend fun restoreSession(): Boolean {
+        return authRepository.restoreSession()
+    }
+
+    fun logout(onComplete: () -> Unit) {
+        viewModelScope.launch {
+            authRepository.logout()
+            onComplete()
         }
     }
 

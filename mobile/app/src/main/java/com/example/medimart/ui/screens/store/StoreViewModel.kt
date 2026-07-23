@@ -3,8 +3,10 @@ package com.example.medimart.ui.screens.store
 import androidx.lifecycle.ViewModel
 import com.example.medimart.data.model.StoreBranchData
 import com.example.medimart.data.model.StoreBranchWithDistance
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import javax.inject.Inject
 import kotlin.math.atan2
 import kotlin.math.cos
 import kotlin.math.pow
@@ -25,7 +27,8 @@ data class StoreUiState(
     val locationStatus: StoreLocationStatus = StoreLocationStatus.REQUESTING_PERMISSION
 )
 
-class StoreViewModel : ViewModel() {
+@HiltViewModel
+class StoreViewModel @Inject constructor() : ViewModel() {
     private val _uiState = MutableStateFlow(StoreUiState())
     val uiState = _uiState.asStateFlow()
 
@@ -59,8 +62,6 @@ class StoreViewModel : ViewModel() {
             }
             .sortedBy { it.distanceKm }
 
-        // Publish the location and its matching distances atomically so the UI
-        // never renders a real location together with placeholder 0.00 km values.
         _uiState.value = StoreUiState(
             branches = branchesWithDistance,
             userLocation = latitude to longitude,

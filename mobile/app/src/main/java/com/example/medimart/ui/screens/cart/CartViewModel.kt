@@ -4,11 +4,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.medimart.data.local.CartEntity
 import com.example.medimart.data.repository.CartRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class CartViewModel(private val cartRepository: CartRepository) : ViewModel() {
+@HiltViewModel
+class CartViewModel @Inject constructor(
+    private val cartRepository: CartRepository
+) : ViewModel() {
     val cartItems = cartRepository.getAllItems()
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 

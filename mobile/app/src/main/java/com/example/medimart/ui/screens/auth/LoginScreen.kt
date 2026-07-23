@@ -56,7 +56,7 @@ fun LoginScreen(
                 .fillMaxWidth()
                 .height(180.dp),
             alignment = Alignment.Center,
-            contentScale = ContentScale.Crop
+            contentScale = ContentScale.Fit
         )
         Spacer(modifier = Modifier.height(24.dp))
         Text(stringResource(R.string.login_title), style = MaterialTheme.typography.headlineMedium.copy(color = MediMartTextPrimary))

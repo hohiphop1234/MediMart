@@ -4,11 +4,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.medimart.data.model.Product
 import com.example.medimart.data.repository.ProductRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class ProductDetailViewModel(
+@HiltViewModel
+class ProductDetailViewModel @Inject constructor(
     private val productRepository: ProductRepository
 ) : ViewModel() {
     private val _product = MutableStateFlow<Product?>(null)

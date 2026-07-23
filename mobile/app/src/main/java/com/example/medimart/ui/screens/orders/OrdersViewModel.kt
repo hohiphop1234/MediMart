@@ -5,13 +5,16 @@ import androidx.lifecycle.viewModelScope
 import com.example.medimart.data.model.Order
 import com.example.medimart.data.model.OrderDetail
 import com.example.medimart.data.repository.OrderRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
+import javax.inject.Inject
 
-class OrdersViewModel(
+@HiltViewModel
+class OrdersViewModel @Inject constructor(
     private val orderRepository: OrderRepository
 ) : ViewModel() {
     private val _orders = MutableStateFlow<List<Order>>(emptyList())

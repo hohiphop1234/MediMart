@@ -6,13 +6,18 @@ import com.example.medimart.data.model.Banner
 import com.example.medimart.data.model.Category
 import com.example.medimart.data.model.Product
 import com.example.medimart.data.repository.ProductRepository
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class HomeViewModel(private val productRepository: ProductRepository) : ViewModel() {
+@HiltViewModel
+class HomeViewModel @Inject constructor(
+    private val productRepository: ProductRepository
+) : ViewModel() {
     private val _banners = MutableStateFlow<List<Banner>>(emptyList())
     val banners = _banners.asStateFlow()
 

@@ -9,13 +9,16 @@ import com.example.medimart.data.model.CheckoutRequest
 import com.example.medimart.data.repository.CartRepository
 import com.example.medimart.data.repository.OrderRepository
 import com.example.medimart.data.repository.UserRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class CheckoutViewModel(
+@HiltViewModel
+class CheckoutViewModel @Inject constructor(
     private val cartRepository: CartRepository,
     private val orderRepository: OrderRepository,
     private val userRepository: UserRepository
