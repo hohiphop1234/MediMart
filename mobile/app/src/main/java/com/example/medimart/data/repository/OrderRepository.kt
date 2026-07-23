@@ -6,10 +6,15 @@ import com.example.medimart.data.model.CheckoutResponse
 import com.example.medimart.data.model.Order
 import com.example.medimart.data.model.OrderDetail
 import com.example.medimart.data.remote.ApiService
+import javax.inject.Inject
+import javax.inject.Singleton
 
 private const val TAG = "OrderRepository"
 
-class OrderRepository(private val apiService: ApiService) {
+@Singleton
+class OrderRepository @Inject constructor(
+    private val apiService: ApiService
+) {
     suspend fun checkout(request: CheckoutRequest): Result<CheckoutResponse> = try {
         Result.success(apiService.checkout(request))
     } catch (e: Exception) {

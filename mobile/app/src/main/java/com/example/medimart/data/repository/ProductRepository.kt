@@ -6,10 +6,15 @@ import com.example.medimart.data.model.Category
 import com.example.medimart.data.model.FlashSaleResponse
 import com.example.medimart.data.model.Product
 import com.example.medimart.data.remote.ApiService
+import javax.inject.Inject
+import javax.inject.Singleton
 
 private const val TAG = "ProductRepository"
 
-class ProductRepository(private val apiService: ApiService) {
+@Singleton
+class ProductRepository @Inject constructor(
+    private val apiService: ApiService
+) {
     suspend fun getBanners(): Result<List<Banner>> = try {
         Result.success(apiService.getBanners())
     } catch (e: Exception) {
@@ -40,11 +45,14 @@ class ProductRepository(private val apiService: ApiService) {
 
     suspend fun searchProducts(
         query: String,
-        categoryId: String? = null
+        categoryId: String? = null,
+        sortBy: String = "relevance",
+        page: Int? = null,
+        limit: Int? = null
     ): Result<List<Product>> = try {
-        Result.success(apiService.searchProducts(query, categoryId))
+        Result.success(apiService.searchProducts(query, categoryId, sortBy, page, limit))
     } catch (e: Exception) {
-        Log.e(TAG, "Error searching products: query=$query, categoryId=$categoryId", e)
+        Log.e(TAG, "Error searching products: query=$query, categoryId=$categoryId, sortBy=$sortBy, page=$page, limit=$limit", e)
         Result.failure(e)
     }
 

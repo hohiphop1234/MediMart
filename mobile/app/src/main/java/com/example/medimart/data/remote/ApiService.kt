@@ -1,6 +1,21 @@
 package com.example.medimart.data.remote
 
-import com.example.medimart.data.model.*
+import com.example.medimart.data.model.Address
+import com.example.medimart.data.model.AddressRequest
+import com.example.medimart.data.model.AuthResponse
+import com.example.medimart.data.model.Banner
+import com.example.medimart.data.model.Category
+import com.example.medimart.data.model.ChatRequest
+import com.example.medimart.data.model.CheckoutRequest
+import com.example.medimart.data.model.CheckoutResponse
+import com.example.medimart.data.model.FlashSaleResponse
+import com.example.medimart.data.model.LoginRequest
+import com.example.medimart.data.model.Order
+import com.example.medimart.data.model.OrderDetail
+import com.example.medimart.data.model.OtpRequest
+import com.example.medimart.data.model.Product
+import com.example.medimart.data.model.RefreshRequest
+import com.example.medimart.data.model.User
 import retrofit2.http.*
 
 interface ApiService {
@@ -28,7 +43,10 @@ interface ApiService {
     @GET("products/search")
     suspend fun searchProducts(
         @Query("q") query: String,
-        @Query("categoryId") categoryId: String? = null
+        @Query("categoryId") categoryId: String? = null,
+        @Query("sortBy") sortBy: String? = "relevance",
+        @Query("page") page: Int? = null,
+        @Query("limit") limit: Int? = null
     ): List<Product>
 
     @GET("products/{id}")

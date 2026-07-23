@@ -16,6 +16,7 @@ data class Product(
     val imageUrl: String,
     val categoryId: String,
     val brand: String,
+    val country: String? = null,
     val isFlashSale: Boolean,
     val isBestSeller: Boolean
 )

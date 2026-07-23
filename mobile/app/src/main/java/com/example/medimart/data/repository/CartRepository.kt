@@ -5,8 +5,13 @@ import com.example.medimart.data.local.CartEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class CartRepository(private val cartDao: CartDao) {
+@Singleton
+class CartRepository @Inject constructor(
+    private val cartDao: CartDao
+) {
     fun getAllItems(): Flow<List<CartEntity>> = cartDao.getAllItems()
 
     suspend fun addToCart(item: CartEntity) = withContext(Dispatchers.IO) {

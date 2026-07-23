@@ -12,10 +12,13 @@ import kotlinx.coroutines.flow.firstOrNull
 import org.json.JSONObject
 import retrofit2.HttpException
 import java.io.IOException
+import javax.inject.Inject
+import javax.inject.Singleton
 
 private const val TAG = "AuthRepository"
 
-class AuthRepository(
+@Singleton
+class AuthRepository @Inject constructor(
     private val apiService: ApiService,
     private val tokenManager: TokenManager
 ) {

@@ -5,10 +5,15 @@ import com.example.medimart.data.model.Address
 import com.example.medimart.data.model.AddressRequest
 import com.example.medimart.data.model.User
 import com.example.medimart.data.remote.ApiService
+import javax.inject.Inject
+import javax.inject.Singleton
 
 private const val TAG = "UserRepository"
 
-class UserRepository(private val apiService: ApiService) {
+@Singleton
+class UserRepository @Inject constructor(
+    private val apiService: ApiService
+) {
     suspend fun getProfile(): Result<User> = try {
         Result.success(apiService.getProfile())
     } catch (e: Exception) {
