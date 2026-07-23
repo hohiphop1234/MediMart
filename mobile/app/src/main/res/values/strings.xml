@@ -27,7 +27,7 @@
     <!-- Auth -->
     <string name="login_title">Đăng nhập</string>
     <string name="login_subtitle">Nhập email để nhận mã xác thực</string>
-    <string name="email_label">Email</string>
+    <string name="email_label">dev@example.com</string>
     <string name="otp_title">Nhập mã OTP</string>
     <string name="otp_subtitle">Mã xác thực 6 số đã được gửi tới:\n%1$s</string>
     <string name="invalid_email">Email không hợp lệ</string>

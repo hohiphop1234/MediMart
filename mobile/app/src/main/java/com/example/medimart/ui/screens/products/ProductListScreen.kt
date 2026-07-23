@@ -1,25 +1,34 @@
 package com.example.medimart.ui.screens.products
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDownward
+import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.SwapVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
+import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -31,9 +40,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -62,6 +71,7 @@ fun ProductListScreen(
     val products by viewModel.products.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
+    val currentSortBy by viewModel.sortBy.collectAsState()
     var query by rememberSaveable(initialQuery, categoryId) { mutableStateOf(initialQuery) }
 
     LaunchedEffect(initialQuery, categoryId) {
@@ -109,6 +119,13 @@ fun ProductListScreen(
                 }
             )
 
+            SortChipsBar(
+                currentSortBy = currentSortBy,
+                onSortSelected = { newSortBy ->
+                    viewModel.setSortBy(newSortBy)
+                }
+            )
+
             when {
                 isLoading -> ProductListLoading()
                 error != null -> ProductListError(error.orEmpty(), viewModel::retry)
@@ -138,6 +155,63 @@ fun ProductListScreen(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun SortChipsBar(
+    currentSortBy: String,
+    onSortSelected: (String) -> Unit
+) {
+    val options = listOf(
+        Triple("relevance", "Liên quan", Icons.Default.SwapVert),
+        Triple("price_asc", "Giá thấp -> cao", Icons.Default.ArrowUpward),
+        Triple("price_desc", "Giá cao -> thấp", Icons.Default.ArrowDownward)
+    )
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .horizontalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        options.forEach { (key, label, icon) ->
+            val isSelected = currentSortBy == key
+            FilterChip(
+                selected = isSelected,
+                onClick = { onSortSelected(key) },
+                label = {
+                    Text(
+                        text = label,
+                        fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                },
+                leadingIcon = {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                },
+                colors = FilterChipDefaults.filterChipColors(
+                    selectedContainerColor = MediMartOrange.copy(alpha = 0.15f),
+                    selectedLabelColor = MediMartOrange,
+                    selectedLeadingIconColor = MediMartOrange,
+                    containerColor = Color.White,
+                    labelColor = MediMartTextPrimary
+                ),
+                border = FilterChipDefaults.filterChipBorder(
+                    enabled = true,
+                    selected = isSelected,
+                    selectedBorderColor = MediMartOrange,
+                    borderColor = Color(0xFFE0E0E0),
+                    selectedBorderWidth = 1.5.dp
+                )
+            )
         }
     }
 }
