@@ -1,6 +1,7 @@
 package com.example.medimart.ui.navigation
 
 import android.net.Uri
+import android.widget.Toast
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -15,6 +16,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
@@ -71,6 +73,17 @@ fun AppNavigation() {
     val currentRoute = navBackStackEntry?.destination?.route ?: initialDestination!!
 
     val cartViewModel: CartViewModel = hiltViewModel()
+    val context = LocalContext.current
+
+    LaunchedEffect(cartViewModel) {
+        cartViewModel.cartAdded.collect {
+            Toast.makeText(
+                context,
+                context.getString(R.string.cart_add_success),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
 
     var showPrescriptionSheet by remember { mutableStateOf(false) }
 

@@ -6,6 +6,7 @@
     <string name="search_content_description">Tìm kiếm</string>
     <string name="flash_sale">⚡ Flash Sale</string>
     <string name="add_to_cart_content_description">Thêm vào giỏ hàng</string>
+    <string name="cart_add_success">Đã thêm thuốc vào giỏ hàng</string>
     <string name="price_format">%,dđ</string>
     <string name="points_format">%1$d Điểm</string>
 
