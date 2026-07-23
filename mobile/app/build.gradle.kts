@@ -14,9 +14,11 @@ fun localBuildConfigValue(name: String): String =
 
 plugins {
   alias(libs.plugins.android.application)
+  alias(libs.plugins.kotlin.android)
   alias(libs.plugins.compose.compiler)
   alias(libs.plugins.kotlin.serialization)
   alias(libs.plugins.ksp)
+  alias(libs.plugins.hilt)
 }
 
 android {
@@ -44,6 +46,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+    kotlinOptions {
+        jvmTarget = "17"
+    }
     buildFeatures {
       compose = true
       aidl = false
@@ -56,10 +61,6 @@ android {
         excludes += "/META-INF/{AL2.0,LGPL2.1}"
       }
     }
-}
-
-kotlin {
-    jvmToolchain(17)
 }
 
 dependencies {
@@ -134,4 +135,9 @@ dependencies {
   implementation(libs.supabase.postgrest)
   implementation(libs.supabase.storage)
   implementation(libs.ktor.client.okhttp)
+
+  // Dagger Hilt
+  implementation(libs.hilt.android)
+  ksp(libs.hilt.compiler)
+  implementation(libs.androidx.hilt.navigation.compose)
 }
