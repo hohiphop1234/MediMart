@@ -4,8 +4,8 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.medimart.data.model.ChatMessage
-import com.example.medimart.data.model.ChatRequest
-import com.example.medimart.data.remote.ApiService
+import com.example.medimart.data.repository.ChatRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -13,10 +13,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.util.UUID
+import javax.inject.Inject
 
 private const val TAG = "ChatViewModel"
 
-class ChatViewModel(private val apiService: ApiService) : ViewModel() {
+@HiltViewModel
+class ChatViewModel @Inject constructor(
+    private val chatRepository: ChatRepository
+) : ViewModel() {
     private val _messages = MutableStateFlow<List<ChatMessage>>(emptyList())
     val messages = _messages.asStateFlow()
 
@@ -60,7 +64,7 @@ class ChatViewModel(private val apiService: ApiService) : ViewModel() {
 
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val responseBody = apiService.streamChat(ChatRequest(message = text, stream = true))
+                val responseBody = chatRepository.streamChat(text)
                 val reader = responseBody.byteStream().bufferedReader()
                 var line: String?
 
@@ -82,10 +86,7 @@ class ChatViewModel(private val apiService: ApiService) : ViewModel() {
                                 isFirstChunk = false
                             }
 
-                            var currentAccumulated = accumulatedText
-                            if (currentAccumulated.startsWith("null")) {
-                                currentAccumulated = currentAccumulated.substring(4).trimStart()
-                            }
+                            val currentAccumulated = accumulatedText
 
                             withContext(Dispatchers.Main) {
                                 _messages.value = _messages.value.map { msg ->
@@ -150,7 +151,7 @@ class ChatViewModel(private val apiService: ApiService) : ViewModel() {
                     json.optString("content", "")
                 } else ""
             }
-            if (rawContent == "null") "" else rawContent
+            if (rawContent.equals("null", ignoreCase = true)) "" else rawContent
         } catch (e: Exception) {
             Log.e(TAG, "Error parsing chunk: $jsonStr", e)
             ""

@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
@@ -124,21 +125,26 @@ fun FloatingChatBox(
                                     .padding(vertical = 4.dp),
                                 horizontalArrangement = if (message.isUser) Arrangement.End else Arrangement.Start
                             ) {
+                                val bubbleShape = RoundedCornerShape(
+                                    topStart = 16.dp,
+                                    topEnd = 16.dp,
+                                    bottomStart = if (message.isUser) 16.dp else 4.dp,
+                                    bottomEnd = if (message.isUser) 4.dp else 16.dp
+                                )
+
                                 Box(
                                     modifier = Modifier
-                                        .widthIn(max = 260.dp)
+                                        .widthIn(max = 280.dp)
+                                        .then(
+                                            if (!message.isUser) {
+                                                Modifier
+                                                    .shadow(2.dp, bubbleShape)
+                                                    .border(0.5.dp, Color(0xFFE2E8F0), bubbleShape)
+                                            } else Modifier
+                                        )
                                         .background(
                                             if (message.isUser) MediMartOrange else Color.White,
-                                            RoundedCornerShape(
-                                                topStart = 16.dp,
-                                                topEnd = 16.dp,
-                                                bottomStart = if (message.isUser) 16.dp else 0.dp,
-                                                bottomEnd = if (message.isUser) 0.dp else 16.dp
-                                            )
-                                        )
-                                        .then(
-                                            if (!message.isUser) Modifier.shadow(1.dp, RoundedCornerShape(16.dp))
-                                            else Modifier
+                                            bubbleShape
                                         )
                                         .padding(12.dp)
                                 ) {
